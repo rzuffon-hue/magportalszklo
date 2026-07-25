@@ -1,0 +1,6 @@
+{
+  "name": "MaG Social",
+  "description": "Luksusowy, popękany portal społecznościowy MaG Social z interaktywnymi odłamkami, unikalnym tłem oraz dynamicznymi modułami.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* 
+  Global iOS Safari Viewport & Overscroll Prevention:
+  Lock html, body, and #root to exact viewport height with hidden overflow
+  and overscroll-behavior: none to prevent rubber-band bounce.
+*/
+html,
+body,
+#root {
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  margin: 0;
+  padding: 0;
+  background-color: #030508;
+  color: #f1f5f9;
+}
+
+/* 
+  Global iOS Safari Auto-Zoom Prevention:
+  iOS Safari automatically zooms into form elements (input, textarea, select) 
+  if their computed font-size is below 16px upon focus.
+  Enforcing 16px font-size globally prevents auto-zoom completely.
+*/
+input,
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/*
+  Smooth touch scrolling for internal content scroll containers
+*/
+.app-scroll-container {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
