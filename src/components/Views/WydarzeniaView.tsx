@@ -24,7 +24,8 @@ import {
 import { EventType, SocialEvent } from '../../types';
 
 export const WydarzeniaView: React.FC = () => {
-  const { profile, events, addEvent, updateEvent, deleteEvent, toggleEventRSVP } = useApp();
+  const { profile, events, addEvent, updateEvent, deleteEvent, toggleEventRSVP, portalTheme } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
 
   const isManagementAllowed = profile.role === 'ADMIN' || profile.role === 'MODERATOR';
 
@@ -134,7 +135,7 @@ export const WydarzeniaView: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+    <div className={`h-full w-full flex flex-col overflow-hidden font-sans ${isMirror ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       {/* Compact Header */}
       <CompactHeader
         title="Wydarzenia i Kalendarz"
@@ -145,12 +146,14 @@ export const WydarzeniaView: React.FC = () => {
       <div className="flex-1 app-scroll-container p-3 sm:p-5 max-w-5xl mx-auto w-full space-y-4">
         
         {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 border border-slate-800/80 p-3 sm:p-4 rounded-2xl backdrop-blur-xl">
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border backdrop-blur-xl ${
+          isMirror ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/60 border-slate-800/80 shadow-xl'
+        }`}>
           <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-amber-400" /> Harmonogram Wydarzeń Sojuszu i Portalu
+            <h2 className={`text-sm sm:text-base font-black flex items-center gap-2 ${isMirror ? 'text-slate-950' : 'text-white'}`}>
+              <Calendar className="w-4 h-4 text-amber-500" /> Harmonogram Wydarzeń Sojuszu i Portalu
             </h2>
-            <p className="text-xs text-slate-400 font-sans">
+            <p className={`text-xs font-sans ${isMirror ? 'text-slate-600' : 'text-slate-400'}`}>
               Zapisuj się na bitwy SVS, Pułapki na Niedźwiedzia, Odlewnie i spotkania gildii.
             </p>
           </div>
@@ -158,7 +161,7 @@ export const WydarzeniaView: React.FC = () => {
           {isManagementAllowed && (
             <button
               onClick={handleOpenCreateModal}
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 transition-all shrink-0 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Dodaj wydarzenie
             </button>
@@ -167,18 +170,22 @@ export const WydarzeniaView: React.FC = () => {
 
         {/* Events List / Empty State */}
         {events.length === 0 ? (
-          <div className="p-8 sm:p-12 text-center rounded-3xl bg-slate-900/50 border border-slate-800/80 space-y-3 max-w-lg mx-auto my-8 backdrop-blur-2xl">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg">
-              <Sparkles className="w-7 h-7 text-amber-400" />
+          <div className={`p-8 sm:p-12 text-center rounded-3xl border space-y-3 max-w-lg mx-auto my-8 backdrop-blur-2xl ${
+            isMirror ? 'bg-white border-slate-300' : 'bg-slate-900/50 border-slate-800/80'
+          }`}>
+            <div className={`w-14 h-14 mx-auto rounded-2xl border flex items-center justify-center shadow-sm ${
+              isMirror ? 'bg-amber-100 border-amber-300 text-amber-600' : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+            }`}>
+              <Sparkles className="w-7 h-7 text-amber-500" />
             </div>
-            <h3 className="text-base font-bold text-white">Brak nadchodzących wydarzeń</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <h3 className={`text-base font-extrabold ${isMirror ? 'text-slate-950' : 'text-white'}`}>Brak nadchodzących wydarzeń</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
               W kalendarzu Portalu MaG nie ma obecnie aktywnych wydarzeń. {isManagementAllowed ? 'Kliknij przycisk powyżej, aby dodać pierwsze wydarzenie!' : 'Zaglądaj tu regularnie, by nie przegapić nadchodzących akcji sojuszu!'}
             </p>
             {isManagementAllowed && (
               <button
                 onClick={handleOpenCreateModal}
-                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-extrabold hover:bg-amber-400 transition-all"
+                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-black text-xs font-extrabold hover:bg-amber-400 transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Stwórz pierwsze wydarzenie
               </button>
@@ -195,15 +202,19 @@ export const WydarzeniaView: React.FC = () => {
               return (
                 <div
                   key={ev.id}
-                  className={`rounded-2xl bg-slate-900/80 border transition-all duration-300 overflow-hidden shadow-xl backdrop-blur-xl ${
-                    ev.isHighlighted
-                      ? 'border-amber-500/60 ring-1 ring-amber-500/30'
-                      : 'border-slate-800/90 hover:border-slate-700'
+                  className={`rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm backdrop-blur-xl ${
+                    isMirror
+                      ? ev.isHighlighted
+                        ? 'bg-white border-amber-400 ring-2 ring-amber-300'
+                        : 'bg-white border-slate-300'
+                      : ev.isHighlighted
+                        ? 'bg-slate-900/80 border-amber-500/60 ring-1 ring-amber-500/30'
+                        : 'bg-slate-900/80 border-slate-800/90 hover:border-slate-700'
                   }`}
                 >
                   <div className="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 items-center">
                     {/* Cover Image */}
-                    <div className="md:col-span-4 h-44 sm:h-48 rounded-xl overflow-hidden relative border border-slate-800 shrink-0 group">
+                    <div className="md:col-span-4 h-44 sm:h-48 rounded-xl overflow-hidden relative border border-slate-300 dark:border-slate-800 shrink-0 group">
                       <img
                         src={ev.coverImage}
                         alt={ev.title}
@@ -235,9 +246,9 @@ export const WydarzeniaView: React.FC = () => {
                     <div className="md:col-span-8 space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-base sm:text-lg font-extrabold text-white">{ev.title}</h3>
-                          <span className="text-xs text-slate-400 font-medium block">
-                            Organizator: <strong className="text-amber-300">{ev.organizer}</strong>
+                          <h3 className={`text-base sm:text-lg font-black ${isMirror ? 'text-slate-950' : 'text-white'}`}>{ev.title}</h3>
+                          <span className={`text-xs font-medium block ${isMirror ? 'text-slate-600' : 'text-slate-400'}`}>
+                            Organizator: <strong className="text-amber-600 dark:text-amber-300">{ev.organizer}</strong>
                           </span>
                         </div>
 
@@ -246,14 +257,16 @@ export const WydarzeniaView: React.FC = () => {
                           <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               onClick={() => handleOpenEditModal(ev)}
-                              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs transition-all"
+                              className={`p-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                                isMirror ? 'bg-slate-200 text-slate-800 hover:bg-slate-300' : 'bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700'
+                              }`}
                               title="Edytuj wydarzenie"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => deleteEvent(ev.id)}
-                              className="p-1.5 rounded-lg bg-rose-950/80 border border-rose-500/40 text-rose-300 hover:bg-rose-900 text-xs transition-all"
+                              className="p-1.5 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 hover:bg-rose-200 text-xs transition-all cursor-pointer dark:bg-rose-950/80 dark:border-rose-500/40 dark:text-rose-300"
                               title="Usuń wydarzenie"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -262,19 +275,21 @@ export const WydarzeniaView: React.FC = () => {
                         )}
                       </div>
 
-                      <p className="text-xs text-slate-300 leading-relaxed font-sans line-clamp-3">
+                      <p className={`text-xs leading-relaxed font-sans line-clamp-3 ${isMirror ? 'text-slate-700' : 'text-slate-300'}`}>
                         {ev.description}
                       </p>
 
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
+                      <div className={`flex flex-wrap items-center gap-4 text-xs pt-2 border-t ${
+                        isMirror ? 'border-slate-200 text-slate-600' : 'border-slate-800/80 text-slate-400'
+                      }`}>
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-amber-400" /> {ev.location}
+                          <MapPin className="w-3.5 h-3.5 text-amber-500" /> {ev.location}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-amber-400" /> {ev.attendeesCount} {ev.participantLimit ? `/ ${ev.participantLimit}` : ''} zapisanych
+                          <Users className="w-3.5 h-3.5 text-amber-500" /> {ev.attendeesCount} {ev.participantLimit ? `/ ${ev.participantLimit}` : ''} zapisanych
                         </span>
                         {ev.hasReminder && (
-                          <span className="flex items-center gap-1 text-emerald-400 text-[11px] font-semibold">
+                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
                             <Bell className="w-3 h-3" /> Powiadomienia włączone
                           </span>
                         )}

@@ -29,7 +29,8 @@ import {
   PortalAnnouncement,
   AnnouncementConfirmation,
   AnnouncementCategory,
-  AnnouncementRequirement
+  AnnouncementRequirement,
+  PortalTheme
 } from '../types';
 import {
   initialProfile,
@@ -56,6 +57,7 @@ async function hashPin(pin: string): Promise<string> {
 }
 
 export type AnimationState = 'logged_out' | 'shattering' | 'logged_in' | 'healing';
+export type { PortalTheme } from '../types';
 
 interface AppContextType {
   activeView: AppView;
@@ -78,6 +80,8 @@ interface AppContextType {
   setSoundEnabled: (enabled: boolean) => void;
   shaderQuality: 'high' | 'medium' | 'low';
   setShaderQuality: (quality: 'high' | 'medium' | 'low') => void;
+  portalTheme: PortalTheme;
+  setPortalTheme: (theme: PortalTheme) => void;
 
   // Authentication & Animation State
   isAuthenticated: boolean;
@@ -222,14 +226,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const userKey = savedUser.toLowerCase();
       const userData = storedUsers[userKey];
       if (userData && userData.profile) {
-        if (userKey === 'admin' || userKey === 'rzaba') {
+        if (userKey === 'admin' || userKey === 'rzaba' || userKey === 'kamil') {
           userData.profile.role = 'ADMIN';
           userData.profile.title = 'Administrator Portalu MaG';
         }
         return userData.profile;
       }
       // Default fallback
-      const isAdminRole = userKey === 'admin' || userKey === 'rzaba';
+      const isAdminRole = userKey === 'admin' || userKey === 'rzaba' || userKey === 'kamil';
       return {
         ...initialProfile,
         id: `usr_${userKey}`,
@@ -277,6 +281,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [shaderQuality, setShaderQuality] = useState<'high' | 'medium' | 'low'>('high');
+
+  // Portal Graphic Theme State (Mroczny vs Jasne Lustro vs MaG Comic)
+  const [portalTheme, setPortalThemeState] = useState<PortalTheme>(() => {
+    const saved = localStorage.getItem('mag_portal_theme');
+    return saved === 'lustrzany' || saved === 'mroczny' || saved === 'komiksowy' ? (saved as PortalTheme) : 'mroczny';
+  });
+
+  const setPortalTheme = (theme: PortalTheme) => {
+    setPortalThemeState(theme);
+    localStorage.setItem('mag_portal_theme', theme);
+  };
+
+  useEffect(() => {
+    if (portalTheme === 'lustrzany') {
+      document.documentElement.classList.add('theme-lustrzany');
+      document.documentElement.classList.remove('theme-mroczny', 'theme-komiksowy');
+    } else if (portalTheme === 'komiksowy') {
+      document.documentElement.classList.add('theme-komiksowy');
+      document.documentElement.classList.remove('theme-mroczny', 'theme-lustrzany');
+    } else {
+      document.documentElement.classList.add('theme-mroczny');
+      document.documentElement.classList.remove('theme-lustrzany', 'theme-komiksowy');
+    }
+  }, [portalTheme]);
 
   // Portal Global Announcements State
   const [announcements, setAnnouncements] = useState<PortalAnnouncement[]>(() => {
@@ -562,13 +590,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (existingUser.profile.accountStatus === 'blocked') {
         return { success: false, message: 'Twoje konto zostało zablokowane przez Administratora Portalu' };
       }
-      if (userKey === 'admin' || userKey === 'rzaba') {
+      if (userKey === 'admin' || userKey === 'rzaba' || userKey === 'kamil') {
         existingUser.profile.role = 'ADMIN';
         existingUser.profile.title = 'Administrator Portalu MaG';
       }
     } else {
-      // Determine initial role: if user logs in with 'admin', 'rzaba' or if it's the very first user created, give ADMIN role
-      const isFirstOrAdmin = userKey === 'admin' || userKey === 'rzaba' || Object.keys(storedUsers).length === 0;
+      // Determine initial role: if user logs in with 'admin', 'rzaba', 'kamil' or if it's the very first user created, give ADMIN role
+      const isFirstOrAdmin = userKey === 'admin' || userKey === 'rzaba' || userKey === 'kamil' || Object.keys(storedUsers).length === 0;
       const initialUserRole: UserRole = isFirstOrAdmin ? 'ADMIN' : 'USER';
 
       const newProfile: UserProfile = {
@@ -2016,7 +2044,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatePortalAnnouncement,
         deletePortalAnnouncement,
         confirmAnnouncementRead,
-        updateUserPermissions
+        updateUserPermissions,
+        portalTheme,
+        setPortalTheme
       }}
     >
       {children}

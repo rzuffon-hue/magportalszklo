@@ -15,7 +15,7 @@ import { useApp } from '../../context/AppContext';
 const NOISE_GRAIN_URL = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E")`;
 
 export const FracturedPortalHome: React.FC = () => {
-  const { animationState, login } = useApp();
+  const { animationState, login, portalTheme } = useApp();
   const [hoveredShard, setHoveredShard] = useState<string | null>(null);
 
   // Minimalist Login form state
@@ -78,10 +78,23 @@ export const FracturedPortalHome: React.FC = () => {
     }
   };
 
+  const isComic = portalTheme === 'komiksowy';
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#030508] select-none text-slate-100">
+    <div className={`relative w-full h-full overflow-hidden select-none transition-colors duration-500 ${
+      isComic
+        ? 'bg-amber-100 text-slate-950 comic-halftone'
+        : portalTheme === 'lustrzany'
+        ? 'bg-[#dbe4ee] text-slate-900'
+        : 'bg-[#030508] text-slate-100'
+    }`}>
+      {/* Halftone Pattern Overlay for Comic Theme */}
+      {isComic && (
+        <div className="absolute inset-0 pointer-events-none opacity-15 bg-[radial-gradient(#0f172a_1.5px,transparent_1.5px)] [background-size:12px_12px] z-0" />
+      )}
+
       {/* 1. Dynamic Subtle Ambient Shader Canvas */}
-      <FissureShaderCanvas />
+      {!isComic && <FissureShaderCanvas />}
 
       {/* 2. Unbroken Smoked Glass Obsidian Atmosphere */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -93,9 +106,27 @@ export const FracturedPortalHome: React.FC = () => {
             backgroundImage: `url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1920&auto=format&fit=crop&q=80')`
           }}
         />
-        {/* Dark Smoked Obsidian Vignette */}
-        <div className="absolute inset-0 bg-radial from-transparent via-black/80 to-black opacity-95" />
+        {/* Vignette Layer */}
+        <div className={`absolute inset-0 transition-all duration-500 ${
+          isComic
+            ? 'bg-radial from-transparent via-amber-200/20 to-amber-900/40 opacity-70'
+            : portalTheme === 'lustrzany'
+            ? 'bg-radial from-transparent via-slate-200/40 to-slate-400/60 opacity-80'
+            : 'bg-radial from-transparent via-black/80 to-black opacity-95'
+        }`} />
       </div>
+
+      {/* Comic Header Banner when in Comic Theme */}
+      {isComic && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex items-center gap-3">
+          <div className="bg-amber-400 border-3 border-slate-950 px-4 py-1 rounded-md shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] transform -rotate-1 font-black text-xs uppercase tracking-widest text-slate-950">
+            ISSUE #1: FRACTURED PORTAL
+          </div>
+          <div className="bg-rose-600 border-3 border-slate-950 px-3 py-1 rounded-md shadow-[3px_3px_0px_0px_rgba(15,23,42,1)] transform rotate-2 font-black text-xs uppercase tracking-widest text-white animate-pulse">
+            SUPERHERO EDITION!
+          </div>
+        </div>
+      )}
 
       {/* 3. Centered Monumental Carved "MaG" Logo Relief (Remains visible under glass before, during, and after login) */}
       <CarvedMaGLogo isShattered={isShattered} isShattering={isShattering} lightSweep={isShattering} />
@@ -196,12 +227,27 @@ export const FracturedPortalHome: React.FC = () => {
             isShattering ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'
           }`}
         >
-          {/* Submerged Form Container - Directly etched into glass surface */}
-          <div className="w-full max-w-xs pt-16 sm:pt-20 flex flex-col items-center z-20">
-            <form onSubmit={handleLoginSubmit} className="w-full space-y-6">
+          {/* Submerged Form Container */}
+          <div className={`w-full max-w-xs pt-16 sm:pt-20 flex flex-col items-center z-20 ${
+            isComic ? 'bg-amber-300 border-4 border-slate-950 p-6 rounded-2xl shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] transform -rotate-1' : ''
+          }`}>
+            {isComic && (
+              <div className="w-full mb-4 px-3 py-1 bg-rose-600 text-white font-black text-center text-xs uppercase tracking-widest border-2 border-slate-950 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transform rotate-1">
+                CLASSIFIED HERO ACCESS
+              </div>
+            )}
+            <form onSubmit={handleLoginSubmit} className="w-full space-y-5">
               {/* LOGIN Field */}
-              <div className="relative border-b border-slate-700/60 focus-within:border-slate-300 transition-colors py-1">
-                <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400/90 mb-1">
+              <div className={`relative border-b transition-colors py-1 ${
+                isComic
+                  ? 'border-b-3 border-slate-950'
+                  : portalTheme === 'lustrzany'
+                  ? 'border-slate-400 focus-within:border-slate-950'
+                  : 'border-slate-700/60 focus-within:border-slate-300'
+              }`}>
+                <label className={`block text-[10px] font-bold uppercase tracking-[0.25em] mb-1 ${
+                  isComic ? 'text-slate-950 font-black' : portalTheme === 'lustrzany' ? 'text-slate-800 font-extrabold' : 'text-slate-400/90'
+                }`}>
                   LOGIN
                 </label>
                 <input
@@ -212,13 +258,27 @@ export const FracturedPortalHome: React.FC = () => {
                     setErrorMsg('');
                   }}
                   autoComplete="username"
-                  className="w-full bg-transparent text-slate-100 font-sans text-base focus:outline-none placeholder-slate-700 tracking-wider py-1"
+                  className={`w-full bg-transparent font-sans text-base focus:outline-none tracking-wider py-1 ${
+                    isComic
+                      ? 'text-slate-950 font-black placeholder-slate-700'
+                      : portalTheme === 'lustrzany'
+                      ? 'text-slate-950 font-bold placeholder-slate-500'
+                      : 'text-slate-100 placeholder-slate-700'
+                  }`}
                 />
               </div>
 
               {/* PIN Field */}
-              <div className="relative border-b border-slate-700/60 focus-within:border-slate-300 transition-colors py-1">
-                <label className="block text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400/90 mb-1">
+              <div className={`relative border-b transition-colors py-1 ${
+                isComic
+                  ? 'border-b-3 border-slate-950'
+                  : portalTheme === 'lustrzany'
+                  ? 'border-slate-400 focus-within:border-slate-950'
+                  : 'border-slate-700/60 focus-within:border-slate-300'
+              }`}>
+                <label className={`block text-[10px] font-bold uppercase tracking-[0.25em] mb-1 ${
+                  isComic ? 'text-slate-950 font-black' : portalTheme === 'lustrzany' ? 'text-slate-800 font-extrabold' : 'text-slate-400/90'
+                }`}>
                   PIN
                 </label>
                 <input
@@ -230,13 +290,19 @@ export const FracturedPortalHome: React.FC = () => {
                   }}
                   maxLength={8}
                   autoComplete="current-password"
-                  className="w-full bg-transparent text-slate-100 font-sans text-base focus:outline-none placeholder-slate-700 tracking-[0.4em] py-1"
+                  className={`w-full bg-transparent font-sans text-base focus:outline-none tracking-[0.4em] py-1 ${
+                    isComic
+                      ? 'text-slate-950 font-black placeholder-slate-700'
+                      : portalTheme === 'lustrzany'
+                      ? 'text-slate-950 font-bold placeholder-slate-500'
+                      : 'text-slate-100 placeholder-slate-700'
+                  }`}
                 />
               </div>
 
               {/* Error State */}
               {errorMsg && (
-                <div className="text-rose-400/90 text-xs font-semibold text-center font-sans animate-in fade-in duration-200">
+                <div className="text-rose-600 font-black text-xs text-center font-sans animate-in fade-in duration-200 bg-white p-1 border-2 border-slate-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   {errorMsg}
                 </div>
               )}
@@ -245,11 +311,15 @@ export const FracturedPortalHome: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || isShattering}
-                className={`w-full mt-4 py-3 rounded-lg bg-slate-900/60 border border-slate-700/80 hover:border-slate-400 text-slate-200 hover:text-white hover:bg-slate-800/70 active:scale-[0.98] transition-all font-serif text-xs font-bold uppercase tracking-[0.3em] cursor-pointer shadow-lg ${
-                  isShattering ? 'opacity-80 scale-[0.98]' : ''
-                }`}
+                className={`w-full mt-4 py-3 active:scale-[0.98] transition-all text-xs font-black uppercase tracking-[0.3em] cursor-pointer shadow-lg ${
+                  isComic
+                    ? 'bg-sky-400 text-slate-950 border-3 border-slate-950 hover:bg-sky-300 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] rounded-xl transform rotate-1'
+                    : portalTheme === 'lustrzany'
+                    ? 'bg-slate-950 text-white hover:bg-slate-800 border border-slate-950 shadow-slate-900/20 rounded-lg'
+                    : 'bg-slate-900/60 border border-slate-700/80 hover:border-slate-400 text-slate-200 hover:text-white hover:bg-slate-800/70 rounded-lg'
+                } ${isShattering ? 'opacity-80 scale-[0.98]' : ''}`}
               >
-                {isSubmitting ? '...' : 'ZALOGUJ'}
+                {isSubmitting ? '...' : 'ZALOGUJ!'}
               </button>
             </form>
           </div>

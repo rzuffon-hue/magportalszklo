@@ -47,8 +47,10 @@ export const GroupDetailView: React.FC<GroupDetailViewProps> = ({ group, onBack 
     likeWallPost,
     addAnnouncement,
     deleteAnnouncement,
-    updateGroup
+    updateGroup,
+    portalTheme
   } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
 
   const [activeTab, setActiveTab] = useState<'forum' | 'tablica' | 'members' | 'info'>('forum');
 
@@ -153,19 +155,27 @@ export const GroupDetailView: React.FC<GroupDetailViewProps> = ({ group, onBack 
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
       {/* Group Header & Cover Banner */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl relative">
+      <div className={`rounded-3xl border overflow-hidden shadow-md relative ${
+        isMirror ? 'bg-white border-slate-300' : 'bg-slate-900 border-slate-800 shadow-2xl'
+      }`}>
         {/* Cover */}
         <div
           className="h-36 sm:h-48 bg-cover bg-center relative"
           style={{ backgroundImage: `url(${group.coverImage})` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-black/30" />
+          <div className={`absolute inset-0 bg-gradient-to-t ${
+            isMirror ? 'from-white/95 via-white/40 to-black/20' : 'from-slate-950 via-slate-950/40 to-black/30'
+          }`} />
 
           {/* Top navigation overlay */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
             <button
               onClick={onBack}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/60 text-xs font-bold text-slate-100 hover:bg-slate-900 backdrop-blur-md transition-all"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold backdrop-blur-md transition-all cursor-pointer ${
+                isMirror
+                  ? 'bg-white/90 border-slate-300 text-slate-900 hover:bg-slate-100'
+                  : 'bg-slate-950/80 border-slate-700/60 text-slate-100 hover:bg-slate-900'
+              }`}
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Wróć do spisu grup
             </button>

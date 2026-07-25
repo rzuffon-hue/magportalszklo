@@ -21,6 +21,329 @@ body,
 }
 
 /* 
+  Theme: Jasne Lustro / Lustrzany (Jasno, Śnieżnie, Mroźno - Bright Snowy Frost Glass)
+*/
+.theme-lustrzany,
+.theme-lustrzany body,
+.theme-lustrzany #root {
+  background-color: #f1f5f9 !important;
+  background-image: radial-gradient(circle at 50% 20%, #ffffff 0%, #e2e8f0 55%, #cbd5e1 100%) !important;
+  color: #020617 !important;
+}
+
+/* Header in Frost Theme -> Snowy Bright Glass */
+.theme-lustrzany header,
+.theme-lustrzany .sticky.top-0 {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.theme-lustrzany header span,
+.theme-lustrzany header button,
+.theme-lustrzany header h1,
+.theme-lustrzany header h2,
+.theme-lustrzany header h3,
+.theme-lustrzany header p,
+.theme-lustrzany .sticky.top-0 h1,
+.theme-lustrzany .sticky.top-0 span {
+  color: #020617 !important;
+}
+
+.theme-lustrzany .app-scroll-container {
+  background-color: transparent !important;
+}
+
+/* Top level view wrappers */
+.theme-lustrzany .h-full.w-full.bg-slate-950,
+.theme-lustrzany .h-full.w-full.bg-black {
+  background-color: transparent !important;
+  color: #020617 !important;
+}
+
+/* ALL Card Containers & Panels -> Snowy Frosted White Glass with Crisp Dark Borders & Black Text */
+.theme-lustrzany .bg-slate-900,
+.theme-lustrzany .bg-slate-950,
+.theme-lustrzany .bg-slate-900\/90,
+.theme-lustrzany .bg-slate-900\/80,
+.theme-lustrzany .bg-slate-900\/60,
+.theme-lustrzany .bg-slate-900\/40,
+.theme-lustrzany .bg-slate-900\/50,
+.theme-lustrzany .bg-slate-950\/90,
+.theme-lustrzany .bg-slate-950\/80,
+.theme-lustrzany .bg-slate-950\/70,
+.theme-lustrzany .bg-slate-950\/95,
+.theme-lustrzany .bg-slate-950\/60,
+.theme-lustrzany .bg-slate-950\/40,
+.theme-lustrzany .bg-black,
+.theme-lustrzany .bg-black\/90,
+.theme-lustrzany .bg-black\/80,
+.theme-lustrzany .bg-black\/60,
+.theme-lustrzany .bg-black\/50,
+.theme-lustrzany .bg-black\/40,
+.theme-lustrzany .bg-purple-950,
+.theme-lustrzany .bg-purple-950\/70,
+.theme-lustrzany .bg-purple-950\/80,
+.theme-lustrzany .bg-purple-950\/40 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  color: #020617 !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Chat Conversation items, sidebar panels, hover states */
+.theme-lustrzany .hover\:bg-slate-800\/60:hover,
+.theme-lustrzany .hover\:bg-slate-900:hover,
+.theme-lustrzany .hover\:bg-slate-800:hover,
+.theme-lustrzany .hover\:bg-slate-900\/50:hover {
+  background-color: #f1f5f9 !important;
+  color: #020617 !important;
+}
+
+.theme-lustrzany .bg-slate-800,
+.theme-lustrzany .bg-slate-800\/60,
+.theme-lustrzany .bg-slate-800\/80,
+.theme-lustrzany .bg-slate-800\/90,
+.theme-lustrzany .bg-slate-800\/40 {
+  background-color: #f8fafc !important;
+  color: #020617 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Modals & Backdrop Overlays */
+.theme-lustrzany .fixed.inset-0.bg-black\/80,
+.theme-lustrzany .fixed.inset-0.bg-black\/90,
+.theme-lustrzany .fixed.inset-0.bg-black\/70,
+.theme-lustrzany .fixed.inset-0.bg-black\/60 {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.theme-lustrzany .fixed .bg-slate-950,
+.theme-lustrzany .fixed .bg-slate-900,
+.theme-lustrzany .fixed .bg-slate-900\/90 {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  border: 1px solid rgba(148, 163, 184, 0.5) !important;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18) !important;
+}
+
+/* Typography & Contrast Rules */
+.theme-lustrzany .text-slate-100,
+.theme-lustrzany .text-slate-200,
+.theme-lustrzany .text-slate-300,
+.theme-lustrzany .text-white {
+  color: #020617 !important;
+}
+
+.theme-lustrzany .text-slate-400,
+.theme-lustrzany .text-slate-500 {
+  color: #334155 !important;
+}
+
+.theme-lustrzany .text-slate-600,
+.theme-lustrzany .text-slate-700 {
+  color: #475569 !important;
+}
+
+/* Colored accent texts in Frost Theme -> Crisp Deep Vibrant Icy Colors */
+.theme-lustrzany .text-sky-300,
+.theme-lustrzany .text-sky-400 {
+  color: #0284c7 !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .text-purple-200,
+.theme-lustrzany .text-purple-300,
+.theme-lustrzany .text-purple-400 {
+  color: #7e22ce !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .text-emerald-300,
+.theme-lustrzany .text-emerald-400 {
+  color: #047857 !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .text-amber-200,
+.theme-lustrzany .text-amber-300,
+.theme-lustrzany .text-amber-400 {
+  color: #b45309 !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .text-cyan-300,
+.theme-lustrzany .text-cyan-400 {
+  color: #0e7490 !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .text-rose-300,
+.theme-lustrzany .text-rose-400 {
+  color: #be123c !important;
+  font-weight: 700 !important;
+}
+
+/* Primary Action Buttons in Frost Theme -> Frost Ice Blue Gradient with Bold WHITE Text */
+.theme-lustrzany .bg-purple-600,
+.theme-lustrzany .bg-purple-500,
+.theme-lustrzany .bg-sky-500,
+.theme-lustrzany .bg-sky-600,
+.theme-lustrzany .bg-emerald-600,
+.theme-lustrzany .bg-cyan-600,
+.theme-lustrzany .bg-amber-500,
+.theme-lustrzany .bg-amber-600,
+.theme-lustrzany .bg-rose-600,
+.theme-lustrzany .bg-indigo-600,
+.theme-lustrzany button[type="submit"] {
+  background-color: #0284c7 !important;
+  background-image: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
+}
+
+.theme-lustrzany .bg-purple-600:hover,
+.theme-lustrzany .bg-purple-500:hover,
+.theme-lustrzany .bg-sky-500:hover,
+.theme-lustrzany .bg-sky-600:hover,
+.theme-lustrzany .bg-emerald-600:hover,
+.theme-lustrzany button[type="submit"]:hover {
+  background-color: #0369a1 !important;
+  background-image: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Force WHITE text/icons inside Primary Action Buttons */
+.theme-lustrzany .bg-purple-600 *,
+.theme-lustrzany .bg-purple-500 *,
+.theme-lustrzany .bg-sky-500 *,
+.theme-lustrzany .bg-sky-600 *,
+.theme-lustrzany .bg-emerald-600 *,
+.theme-lustrzany .bg-cyan-600 *,
+.theme-lustrzany .bg-amber-500 *,
+.theme-lustrzany .bg-amber-600 *,
+.theme-lustrzany .bg-rose-600 *,
+.theme-lustrzany .bg-indigo-600 *,
+.theme-lustrzany button[type="submit"] * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Secondary Buttons & Control Icons */
+.theme-lustrzany button.bg-slate-900,
+.theme-lustrzany button.bg-slate-950,
+.theme-lustrzany button.bg-slate-800,
+.theme-lustrzany button.bg-slate-800\/60 {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.theme-lustrzany button.bg-slate-900 *,
+.theme-lustrzany button.bg-slate-950 *,
+.theme-lustrzany button.bg-slate-800 * {
+  color: #020617 !important;
+  stroke: #020617 !important;
+}
+
+/* Badges & Tag Chips */
+.theme-lustrzany .bg-sky-500\/20,
+.theme-lustrzany .bg-purple-500\/20,
+.theme-lustrzany .bg-amber-500\/20,
+.theme-lustrzany .bg-emerald-500\/20,
+.theme-lustrzany .bg-rose-500\/20,
+.theme-lustrzany .bg-sky-950,
+.theme-lustrzany .bg-purple-950 {
+  background-color: #f1f5f9 !important;
+  color: #020617 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+
+.theme-lustrzany .bg-sky-500\/20 *,
+.theme-lustrzany .bg-purple-500\/20 *,
+.theme-lustrzany .bg-amber-500\/20 *,
+.theme-lustrzany .bg-emerald-500\/20 *,
+.theme-lustrzany .bg-rose-500\/20 *,
+.theme-lustrzany .bg-sky-950 *,
+.theme-lustrzany .bg-purple-950 * {
+  color: #020617 !important;
+}
+
+/* Inputs, Textareas, Selects in Frost Theme */
+.theme-lustrzany input,
+.theme-lustrzany textarea,
+.theme-lustrzany select {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  border: 1px solid #94a3b8 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.theme-lustrzany input::placeholder,
+.theme-lustrzany textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Borders in Frost Theme */
+.theme-lustrzany .border-slate-800,
+.theme-lustrzany .border-slate-700,
+.theme-lustrzany .border-slate-800\/80,
+.theme-lustrzany .border-slate-800\/60,
+.theme-lustrzany .border-slate-700\/50,
+.theme-lustrzany .border-sky-500\/20,
+.theme-lustrzany .border-sky-500\/25,
+.theme-lustrzany .border-sky-500\/30,
+.theme-lustrzany .border-purple-500\/20,
+.theme-lustrzany .border-purple-500\/30,
+.theme-lustrzany .border-purple-500\/40,
+.theme-lustrzany .border-amber-500\/30,
+.theme-lustrzany .border-emerald-500\/30 {
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+/* Chat Messages in Frost Theme */
+.theme-lustrzany .chat-msg-incoming,
+.theme-lustrzany .bg-slate-900.rounded-2xl,
+.theme-lustrzany .bg-slate-800.rounded-2xl {
+  background-color: #f1f5f9 !important;
+  color: #020617 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.theme-lustrzany .chat-msg-outgoing,
+.theme-lustrzany .bg-purple-600.rounded-2xl {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border: 1px solid #0284c7 !important;
+}
+
+.theme-lustrzany .chat-msg-outgoing * {
+  color: #ffffff !important;
+}
+
+/* Preserving Game Table Boards where necessary */
+.theme-lustrzany .game-canvas-board {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Dropdown drawers, bell panel & settings popup */
+.theme-lustrzany .fixed .bg-slate-950\/95,
+.theme-lustrzany .fixed .bg-slate-900\/95,
+.theme-lustrzany .absolute .bg-slate-950,
+.theme-lustrzany .absolute .bg-slate-900 {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.15) !important;
+}
+
+/* 
   Global iOS Safari Auto-Zoom Prevention:
   iOS Safari automatically zooms into form elements (input, textarea, select) 
   if their computed font-size is below 16px upon focus.

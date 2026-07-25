@@ -29,7 +29,8 @@ import frostDefenseCoverImg from '../../assets/images/frost_defense_cover_178499
 import snowBlocksCoverImg from '../../assets/images/snow_blocks_cover_1784995650410.jpg';
 
 export const GryView: React.FC = () => {
-  const { profile, usersList, setProfile } = useApp();
+  const { profile, usersList, setProfile, portalTheme } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
 
   // Active View Mode: 'catalog' is the primary default home screen
   const [activeTabMode, setActiveTabMode] = useState<
@@ -97,7 +98,7 @@ export const GryView: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+    <div className={`h-full w-full flex flex-col overflow-hidden font-sans ${isMirror ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       
       {/* 1. TOP HEADER / BACK NAVIGATION BAR */}
       {activeTabMode === 'catalog' ? (
@@ -106,16 +107,22 @@ export const GryView: React.FC = () => {
           badge="KATALOG GIER"
         />
       ) : (
-        <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-3 flex items-center justify-between backdrop-blur-md z-20 shrink-0">
+        <div className={`border-b px-4 py-3 flex items-center justify-between backdrop-blur-md z-20 shrink-0 ${
+          isMirror ? 'bg-white/90 border-slate-300' : 'bg-slate-900/90 border-slate-800'
+        }`}>
           <button
             onClick={() => setActiveTabMode('catalog')}
-            className="flex items-center gap-2 text-xs font-black text-cyan-300 hover:text-cyan-200 bg-slate-950/80 hover:bg-slate-800 border border-slate-800 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-md active:scale-95"
+            className={`flex items-center gap-2 text-xs font-black px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 ${
+              isMirror
+                ? 'bg-slate-100 hover:bg-slate-200 border border-slate-300 text-sky-800'
+                : 'bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-cyan-300'
+            }`}
           >
             <ArrowLeft className="w-4 h-4" />
             <span>KATALOG GIER</span>
           </button>
 
-          <span className="text-xs font-extrabold text-slate-300 uppercase tracking-wide">
+          <span className={`text-xs font-black uppercase tracking-wide ${isMirror ? 'text-slate-950' : 'text-slate-300'}`}>
             {activeTabMode === 'poker_kosci'
               ? 'POKER KOŚCI 🎲'
               : activeTabMode === 'mini_whiteout'

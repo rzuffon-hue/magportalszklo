@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bell, Settings, Sparkles, Volume2, VolumeX, RotateCcw, LogOut, ShieldAlert, Megaphone, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Settings, Volume2, VolumeX, LogOut, ShieldAlert, Megaphone, CheckCircle2, Sun, Moon, ArrowLeft, Palette, Sparkles, RotateCcw, Zap } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const Header: React.FC = () => {
@@ -15,8 +15,8 @@ export const Header: React.FC = () => {
     setActiveAnnouncementModal,
     soundEnabled,
     setSoundEnabled,
-    shaderQuality,
-    setShaderQuality,
+    portalTheme,
+    setPortalTheme,
     isAuthenticated,
     logout
   } = useApp();
@@ -24,8 +24,21 @@ export const Header: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [notifTab, setNotifTab] = useState<'announcements' | 'system'>('announcements');
+  const [shaderQuality, setShaderQuality] = useState<'low' | 'medium' | 'high'>('high');
 
   const totalUnreadCount = unreadNotificationsCount + unreadAnnouncementsCount;
+
+  // ESC key listener to close drawers
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowNotifications(false);
+        setShowSettings(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const toggleNotifs = () => {
     setShowNotifications(!showNotifications);
@@ -53,29 +66,42 @@ export const Header: React.FC = () => {
         />
       )}
 
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 px-4 sm:px-8 flex items-center justify-between bg-gradient-to-b from-black/90 via-slate-950/70 to-transparent backdrop-blur-md border-b border-slate-800/40">
+      <header className={`fixed top-0 left-0 right-0 z-50 h-14 px-2.5 sm:px-6 flex items-center justify-between border-b backdrop-blur-xl transition-all duration-300 ${
+        portalTheme === 'komiksowy'
+          ? 'bg-amber-300 border-b-3 border-slate-950 text-slate-950 shadow-[0_3px_0px_0px_rgba(15,23,42,1)]'
+          : portalTheme === 'lustrzany'
+          ? 'bg-white/95 border-slate-300/80 text-slate-950 shadow-sm'
+          : 'bg-gradient-to-b from-black/95 via-slate-950/85 to-transparent border-slate-800/60 text-slate-100'
+      }`}>
       
-      {/* Left: MaG Carved Brand Logo */}
-      <div
-        onClick={() => isAuthenticated && setActiveView('home')}
-        className="cursor-pointer group flex items-center gap-2 select-none"
-      >
-        <span
-          className="text-2xl font-black font-serif tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-100 via-sky-200 to-purple-200 group-hover:from-purple-300 group-hover:to-sky-300 transition-all drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
-          style={{ fontFamily: "'Cinzel', 'Playfair Display', serif" }}
+      {/* Left: MaG Brand & Compact Back Arrow */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div
+          onClick={() => isAuthenticated && setActiveView('home')}
+          className="cursor-pointer group flex items-center gap-1.5 select-none"
         >
-          MaG
-        </span>
-        {isAuthenticated && activeView !== 'home' && (
-          <span className="text-xs text-slate-400 bg-slate-900/80 border border-slate-700/60 px-2 py-0.5 rounded-full font-medium">
-            ← Wróć do Portalu
+          <span
+            className="text-xl sm:text-2xl font-black font-serif tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-100 via-sky-200 to-purple-200 group-hover:from-purple-300 group-hover:to-sky-300 transition-all drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]"
+            style={{ fontFamily: "'Cinzel', 'Playfair Display', serif" }}
+          >
+            MaG
           </span>
+        </div>
+
+        {isAuthenticated && activeView !== 'home' && (
+          <button
+            onClick={() => setActiveView('home')}
+            className="p-1.5 min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] flex items-center justify-center rounded-xl bg-slate-900/60 border border-slate-700/60 text-slate-200 hover:text-white hover:border-slate-400 active:scale-95 transition-all cursor-pointer shrink-0"
+            title="Powrót do Portalu (ESC)"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 h-5 text-sky-400" />
+          </button>
         )}
       </div>
 
       {/* Right Controls: Rendered when authenticated */}
       {isAuthenticated && (
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Admin Panel Quick Access Button (only for ADMIN) */}
           {profile.role === 'ADMIN' && (
             <button
@@ -83,29 +109,29 @@ export const Header: React.FC = () => {
                 setActiveView('admin');
                 setShowSettings(false);
               }}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[9px] font-mono font-bold tracking-wider transition-all backdrop-blur-md opacity-85 hover:opacity-100 ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[9px] font-mono font-bold tracking-wider transition-all backdrop-blur-md cursor-pointer shrink-0 ${
                 activeView === 'admin'
                   ? 'bg-amber-500/90 text-black border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                  : 'bg-slate-950/80 border-slate-700/60 text-amber-300/80 hover:border-amber-400/60 hover:text-amber-200 hover:bg-slate-900/80'
+                  : 'bg-slate-950/80 border-slate-700/60 text-amber-300 hover:border-amber-400/60 hover:bg-slate-900/80'
               }`}
             >
-              <ShieldAlert className="w-2.5 h-2.5 text-amber-400 shrink-0" />
-              <span>ADMIN</span>
+              <ShieldAlert className="w-3 h-3 text-amber-400 shrink-0" />
+              <span className="hidden xs:inline">ADMIN</span>
             </button>
           )}
 
           {/* User Profile Quick Badge */}
           <div
             onClick={() => setActiveView('profil')}
-            className="flex items-center gap-2 bg-slate-950/80 border border-slate-700/50 hover:border-amber-500/50 px-2.5 py-1 rounded-full cursor-pointer transition-all backdrop-blur-md group"
+            className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-700/50 hover:border-amber-500/50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full cursor-pointer transition-all backdrop-blur-md group shrink-0"
           >
             <img
               src={profile.avatar}
               alt={profile.name}
               referrerPolicy="no-referrer"
-              className="w-7 h-7 rounded-full object-cover ring-1 ring-amber-400/50 group-hover:ring-amber-400"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover ring-1 ring-amber-400/50 group-hover:ring-amber-400"
             />
-            <div className="hidden sm:flex flex-col text-left">
+            <div className="hidden md:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-100 group-hover:text-amber-200 transition-colors flex items-center gap-1">
                 {profile.name}
                 {profile.role === 'ADMIN' && (
@@ -300,6 +326,53 @@ export const Header: React.FC = () => {
                     <ShieldAlert className="w-4 h-4 text-amber-400" /> Otwórz Panel Admina
                   </button>
                 )}
+
+                {/* Portal Theme Toggle (Admin & User) */}
+                <div className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <Palette className="w-4 h-4 text-amber-400" /> Motyw Portalu
+                    </span>
+                    {profile.role === 'ADMIN' && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">ADMIN</span>
+                    )}
+                  </span>
+                  <div className="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    <button
+                      onClick={() => setPortalTheme('mroczny')}
+                      className={`py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        portalTheme === 'mroczny'
+                          ? 'bg-amber-500 text-black shadow-md font-black'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Moon className="w-3 h-3 shrink-0" />
+                      <span>Mroczny</span>
+                    </button>
+                    <button
+                      onClick={() => setPortalTheme('lustrzany')}
+                      className={`py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        portalTheme === 'lustrzany'
+                          ? 'bg-sky-500 text-white shadow-md font-black'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Sun className="w-3 h-3 shrink-0" />
+                      <span>Lustrzany</span>
+                    </button>
+                    <button
+                      onClick={() => setPortalTheme('komiksowy')}
+                      className={`py-1.5 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        portalTheme === 'komiksowy'
+                          ? 'bg-amber-400 text-slate-950 font-black shadow-md border border-slate-950'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Zap className="w-3 h-3 shrink-0 fill-amber-400" />
+                      <span>Komiks!</span>
+                    </button>
+                  </div>
+                </div>
 
                 {/* Sound Toggle */}
                 <div className="flex items-center justify-between">

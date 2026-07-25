@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApp } from '../../context/AppContext';
 
 interface GlassRimHighlightProps {
   clipPath?: string;
@@ -9,6 +10,9 @@ export const GlassRimHighlight: React.FC<GlassRimHighlightProps> = ({
   clipPath,
   themeColor = 'rgba(255, 255, 255, 0.25)'
 }) => {
+  const { portalTheme } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
+
   if (!clipPath) return null;
 
   // Convert "polygon(0% 0%, 100% 0%, ...)" into SVG points format "0 0, 100 0, ..."
@@ -25,63 +29,54 @@ export const GlassRimHighlight: React.FC<GlassRimHighlightProps> = ({
       preserveAspectRatio="none"
     >
       <defs>
-        {/* Soft natural edge blur - reduced glow */}
+        {/* Soft natural edge blur */}
         <filter id="fissure-soft-rim" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="0.4" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
 
-      {/* Layer 1: Dark Void Shadow Gap (Ciemna szczelina między taflami) */}
+      {/* Layer 1: Dark Void Crack Line */}
       <polygon
         points={points}
         fill="none"
-        stroke="rgba(2, 6, 16, 0.95)"
-        strokeWidth="2.2"
+        stroke={isMirror ? 'rgba(0, 0, 0, 0.95)' : 'rgba(2, 6, 16, 0.95)'}
+        strokeWidth={isMirror ? '2.8' : '2.2'}
         vectorEffect="non-scaling-stroke"
       />
 
-      {/* Layer 2: Subtle Subsurface Cold Refraction (Zmniejszony glow o ~60-70%) */}
+      {/* Layer 2: Refraction Line */}
       <polygon
         points={points}
         fill="none"
-        stroke="rgba(186, 230, 253, 0.25)"
+        stroke={isMirror ? 'rgba(255, 255, 255, 0.9)' : 'rgba(186, 230, 253, 0.25)'}
         strokeWidth="1.0"
         vectorEffect="non-scaling-stroke"
-        filter="url(#fissure-soft-rim)"
-        className="opacity-40 group-hover:opacity-70 transition-opacity duration-300"
+        filter={isMirror ? undefined : 'url(#fissure-soft-rim)'}
+        className={isMirror ? 'opacity-90' : 'opacity-40 group-hover:opacity-70 transition-opacity duration-300'}
       />
 
-      {/* Layer 3: Section Color Accent Edge */}
+      {/* Layer 3: Edge Color / Dark Line in Mirror */}
+      {!isMirror && (
+        <polygon
+          points={points}
+          fill="none"
+          stroke={themeColor}
+          strokeWidth="0.8"
+          vectorEffect="non-scaling-stroke"
+          className="opacity-30 group-hover:opacity-60 transition-opacity duration-300"
+        />
+      )}
+
+      {/* Layer 4: Catchlight */}
       <polygon
         points={points}
         fill="none"
-        stroke={themeColor}
-        strokeWidth="0.8"
-        vectorEffect="non-scaling-stroke"
-        className="opacity-30 group-hover:opacity-60 transition-opacity duration-300"
-      />
-
-      {/* Layer 4: Organic Irregular Frost Coating (Biały szron i śnieżny pył wzdłuż krawędzi) */}
-      <polygon
-        points={points}
-        fill="none"
-        stroke="rgba(240, 249, 255, 0.65)"
-        strokeWidth="1.1"
-        strokeDasharray="1.5 0.8 6 1.8 0.6 0.4 9 2.2 0.8 1.2"
-        vectorEffect="non-scaling-stroke"
-        className="opacity-70 group-hover:opacity-95 transition-opacity duration-300"
-      />
-
-      {/* Layer 5: Fine Specular Catchlight (Refrakcja zimnego światła na szkle) */}
-      <polygon
-        points={points}
-        fill="none"
-        stroke="rgba(255, 255, 255, 0.75)"
-        strokeWidth="0.4"
+        stroke={isMirror ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.75)'}
+        strokeWidth={isMirror ? '0.6' : '0.4'}
         strokeDasharray="12 6 22 14 6 3 30 18"
         vectorEffect="non-scaling-stroke"
-        className="opacity-60 group-hover:stroke-white group-hover:opacity-90 transition-all duration-300"
+        className="opacity-80 group-hover:stroke-white transition-all duration-300"
       />
     </svg>
   );

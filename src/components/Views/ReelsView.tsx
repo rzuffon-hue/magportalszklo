@@ -31,8 +31,10 @@ export const ReelsView: React.FC = () => {
     likeReelComment,
     deleteReelComment,
     profile,
-    setActiveView
+    setActiveView,
+    portalTheme
   } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
 
   // Selected reel for Fullscreen Viewer mode. If null -> Level 1 (REELS HUB)
   const [selectedReelId, setSelectedReelId] = useState<string | null>(null);
@@ -298,7 +300,7 @@ export const ReelsView: React.FC = () => {
   const totalCommentsCount = commentList.length;
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden select-none">
+    <div className={`h-full w-full flex flex-col overflow-hidden select-none font-sans ${isMirror ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       {/* Compact Header */}
       <CompactHeader
         title="REELS SOJUSZU"
@@ -310,72 +312,61 @@ export const ReelsView: React.FC = () => {
       {/* LEVEL 1: REELS HUB / BIBLIOTEKA */}
       {selectedReelId === null ? (
         <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-6 max-w-5xl mx-auto w-full app-scroll-container">
-          
-          {/* SECTION 1: NAJNOWSZE */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-slate-200 uppercase flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-rose-400" /> NAJNOWSZE
-                </h2>
+          {reels.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4 text-center space-y-4 my-auto">
+              <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                <Film className="w-8 h-8" />
               </div>
-              <span className="text-[10px] font-mono text-slate-500">{reels.length} materiałów</span>
-            </div>
-
-            {/* HORIZONTAL SCROLL ROW 1 */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 px-1 scrollbar-none snap-x touch-pan-x">
-              {/* FIRST TILE: + DODAJ REEL */}
-              <div
+              <p className="text-base font-black">Nie ma jeszcze Reelsów.</p>
+              <button
                 onClick={() => setShowAddModal(true)}
-                className="w-28 sm:w-36 md:w-40 aspect-[9/16] flex-shrink-0 snap-start rounded-2xl border-2 border-dashed border-rose-500/30 hover:border-rose-400/80 bg-slate-900/60 hover:bg-slate-900/90 hover:shadow-[0_0_25px_rgba(244,63,94,0.2)] backdrop-blur-md flex flex-col items-center justify-center p-3 transition-all duration-300 cursor-pointer group text-center select-none"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 cursor-pointer transition-all active:scale-95"
               >
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-500/20 group-hover:text-white transition-all duration-300 mb-2 shadow-inner">
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Plus className="w-4 h-4" />
+                <span>+ Dodaj pierwszy Reel</span>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+                  <h2 className="text-xs sm:text-sm font-extrabold tracking-wider uppercase flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-rose-400" /> REELS SOJUSZU
+                  </h2>
                 </div>
-                <span className="text-xs sm:text-sm font-extrabold text-white group-hover:text-rose-300 transition-colors">
-                  Dodaj Reel
-                </span>
-                <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-1.5 leading-tight">
-                  Zdjęcie • Film • YouTube
-                </span>
+                <span className="text-xs font-mono opacity-60">{reels.length} materiałów</span>
               </div>
 
-              {/* REEL CARDS IN NAJNOWSZE */}
-              {reels.map((reel) => (
-                <ReelCard
-                  key={reel.id}
-                  reel={reel}
-                  onClick={() => handleOpenViewer(reel.id)}
-                />
-              ))}
-            </div>
-          </div>
+              {/* 2-COLUMN GRID ON MOBILE, 3 ON SM, 4 ON MD */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                {/* FIRST TILE: + DODAJ REEL */}
+                <div
+                  onClick={() => setShowAddModal(true)}
+                  className="w-full aspect-[9/16] rounded-2xl border-2 border-dashed border-rose-500/40 hover:border-rose-400 bg-slate-900/40 hover:bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center p-3 transition-all duration-300 cursor-pointer group text-center select-none"
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center group-hover:scale-110 group-hover:bg-rose-500/20 transition-all duration-300 mb-2 shadow-inner">
+                    <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <span className="text-xs font-extrabold group-hover:text-rose-400 transition-colors">
+                    Dodaj Reel
+                  </span>
+                  <span className="text-[10px] opacity-60 font-mono mt-1 leading-tight">
+                    Zdjęcie • Film • YT
+                  </span>
+                </div>
 
-          {/* SECTION 2: POPULARNE */}
-          <div className="space-y-3 pt-2 border-t border-slate-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                <h2 className="text-xs sm:text-sm font-extrabold tracking-wider text-slate-200 uppercase flex items-center gap-1.5">
-                  <Flame className="w-3.5 h-3.5 text-amber-400" /> POPULARNE
-                </h2>
+                {/* REEL CARDS GRID */}
+                {reels.map((reel) => (
+                  <ReelCard
+                    key={reel.id}
+                    reel={reel}
+                    onClick={() => handleOpenViewer(reel.id)}
+                  />
+                ))}
               </div>
-              <span className="text-[10px] font-mono text-slate-500">Najwyższy opór i polubienia</span>
             </div>
-
-            {/* HORIZONTAL SCROLL ROW 2 */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 px-1 scrollbar-none snap-x touch-pan-x">
-              {popularReels.map((reel) => (
-                <ReelCard
-                  key={`pop_${reel.id}`}
-                  reel={reel}
-                  onClick={() => handleOpenViewer(reel.id)}
-                />
-              ))}
-            </div>
-          </div>
-
+          )}
         </div>
       ) : (
         /* LEVEL 2: FULLSCREEN REEL VIEWER */
@@ -913,13 +904,14 @@ export const ReelsView: React.FC = () => {
 interface ReelCardProps {
   reel: Reel;
   onClick: () => void;
+  className?: string;
 }
 
-const ReelCard: React.FC<ReelCardProps> = ({ reel, onClick }) => {
+const ReelCard: React.FC<ReelCardProps> = ({ reel, onClick, className = '' }) => {
   return (
     <div
       onClick={onClick}
-      className="w-28 sm:w-36 md:w-40 aspect-[9/16] flex-shrink-0 snap-start relative rounded-2xl overflow-hidden border border-slate-800/80 hover:border-rose-500/60 hover:shadow-[0_0_20px_rgba(244,63,94,0.25)] transition-all duration-300 cursor-pointer group bg-slate-950 select-none"
+      className={`w-full aspect-[9/16] relative rounded-2xl overflow-hidden border border-slate-800/80 hover:border-rose-500/60 hover:shadow-[0_0_20px_rgba(244,63,94,0.25)] transition-all duration-300 cursor-pointer group bg-slate-950 select-none ${className}`}
     >
       {/* THUMBNAIL BACKGROUND */}
       <div

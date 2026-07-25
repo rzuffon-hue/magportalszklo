@@ -1,4 +1,5 @@
 import React from 'react';
+import { useApp } from '../../context/AppContext';
 
 interface ShatterAnimationOverlayProps {
   isShattered?: boolean;
@@ -229,6 +230,9 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
   isShattering = false,
   hoveredShard = null
 }) => {
+  const { portalTheme } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
+
   // Crack propagation sequence timing (ms) starting at 250ms after initial glass stress flash
   // Tier 1 (250-470ms) -> Tier 2 (450-670ms) -> Tier 3 (620-840ms)
   const desktopDelays = [250, 270, 290, 450, 480, 510, 540, 620, 650, 680, 710];
@@ -285,18 +289,20 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
             const delay = desktopDelays[idx] || 250;
             const duration = desktopDurations[idx] || 200;
             const isHighlighted = hoveredShard ? fissure.pathShards.includes(hoveredShard) : false;
-            const highlightColor = hoveredShard && SHARD_HOVER_COLORS[hoveredShard]
-              ? SHARD_HOVER_COLORS[hoveredShard]
-              : 'rgba(240, 249, 255, 0.95)';
+            const highlightColor = isMirror
+              ? 'rgba(2, 132, 199, 0.95)'
+              : (hoveredShard && SHARD_HOVER_COLORS[hoveredShard]
+                  ? SHARD_HOVER_COLORS[hoveredShard]
+                  : 'rgba(240, 249, 255, 0.95)');
 
             return (
               <g key={`desk_fiss_${idx}`}>
-                {/* 1. Deep Void Gap Shadow (Ciemna szczelina między taflami) */}
+                {/* 1. Deep Void Gap Shadow (Thin ice-slate core gap) */}
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke="rgba(2, 6, 16, 0.95)"
-                  strokeWidth={isHighlighted ? '2.4' : '1.8'}
+                  stroke={isMirror ? "rgba(100, 116, 139, 0.45)" : "rgba(2, 6, 16, 0.95)"}
+                  strokeWidth={isHighlighted ? '2.2' : '1.5'}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
@@ -310,19 +316,19 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
                   }
                 />
 
-                {/* 2. Organic Frost Coating Layer (Nieregularny szron i śnieżny pył) */}
+                {/* 2. Organic Frost Coating Layer (Frosty icy edge coating) */}
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke="rgba(240, 249, 255, 0.72)"
-                  strokeWidth={isHighlighted ? '1.5' : '1.0'}
+                  stroke={isMirror ? 'rgba(255, 255, 255, 0.95)' : 'rgba(240, 249, 255, 0.72)'}
+                  strokeWidth={isHighlighted ? '1.8' : '1.2'}
                   strokeDasharray="1.5 0.8 6 1.8 0.6 0.4 9 2.2 0.8 1.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                   style={
                     isShattered && !isShattering
-                      ? { opacity: 0.85, transition: 'all 300ms ease' }
+                      ? { opacity: 0.95, transition: 'all 300ms ease' }
                       : {
                           animation: `fissureFadeIn 350ms ease ${delay + 180}ms forwards`,
                           opacity: 0
@@ -330,11 +336,11 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
                   }
                 />
 
-                {/* 3. Primary Crack Propagation Line (Krawędź pęknięcia szkła) */}
+                {/* 3. Primary Crack Propagation Line */}
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke={isHighlighted ? highlightColor : 'rgba(255, 255, 255, 0.88)'}
+                  stroke={isHighlighted ? highlightColor : (isMirror ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.88)')}
                   strokeWidth={isHighlighted ? '1.0' : '0.6'}
                   pathLength="100"
                   strokeDasharray="100"
@@ -431,9 +437,11 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
             const delay = mobileDelays[idx] || 250;
             const duration = mobileDurations[idx] || 200;
             const isHighlighted = hoveredShard ? fissure.pathShards.includes(hoveredShard) : false;
-            const highlightColor = hoveredShard && SHARD_HOVER_COLORS[hoveredShard]
-              ? SHARD_HOVER_COLORS[hoveredShard]
-              : 'rgba(240, 249, 255, 0.95)';
+            const highlightColor = isMirror
+              ? 'rgba(2, 132, 199, 0.95)'
+              : (hoveredShard && SHARD_HOVER_COLORS[hoveredShard]
+                  ? SHARD_HOVER_COLORS[hoveredShard]
+                  : 'rgba(240, 249, 255, 0.95)');
 
             return (
               <g key={`mob_fiss_${idx}`}>
@@ -441,8 +449,8 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke="rgba(2, 6, 16, 0.95)"
-                  strokeWidth={isHighlighted ? '2.4' : '1.8'}
+                  stroke={isMirror ? "rgba(100, 116, 139, 0.45)" : "rgba(2, 6, 16, 0.95)"}
+                  strokeWidth={isHighlighted ? '2.2' : '1.5'}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
@@ -460,15 +468,15 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke="rgba(240, 249, 255, 0.72)"
-                  strokeWidth={isHighlighted ? '1.5' : '1.0'}
+                  stroke={isMirror ? 'rgba(255, 255, 255, 0.95)' : 'rgba(240, 249, 255, 0.72)'}
+                  strokeWidth={isHighlighted ? '1.8' : '1.2'}
                   strokeDasharray="1.5 0.8 6 1.8 0.6 0.4 9 2.2 0.8 1.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                   style={
                     isShattered && !isShattering
-                      ? { opacity: 0.85, transition: 'all 300ms ease' }
+                      ? { opacity: 0.95, transition: 'all 300ms ease' }
                       : {
                           animation: `fissureFadeIn 350ms ease ${delay + 180}ms forwards`,
                           opacity: 0
@@ -480,7 +488,7 @@ export const ShatterAnimationOverlay: React.FC<ShatterAnimationOverlayProps> = (
                 <path
                   d={fissure.mainPath}
                   fill="none"
-                  stroke={isHighlighted ? highlightColor : 'rgba(255, 255, 255, 0.88)'}
+                  stroke={isHighlighted ? highlightColor : (isMirror ? 'rgba(15, 23, 42, 0.65)' : 'rgba(255, 255, 255, 0.88)')}
                   strokeWidth={isHighlighted ? '1.0' : '0.6'}
                   pathLength="100"
                   strokeDasharray="100"

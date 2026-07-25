@@ -40,8 +40,11 @@ export const ProfilView: React.FC = () => {
     addPost,
     likePost,
     reels,
-    usersList
+    usersList,
+    portalTheme
   } = useApp();
+
+  const isMirror = portalTheme === 'lustrzany';
 
   // Active Profile Tab: POSTY | MEDIA | OSIĄGNIĘCIA
   const [activeTab, setActiveTab] = useState<'posts' | 'media' | 'achievements'>('posts');
@@ -194,21 +197,21 @@ export const ProfilView: React.FC = () => {
   ];
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+    <div className={`h-full w-full flex flex-col overflow-hidden font-sans ${isMirror ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       {/* Scrollable Container */}
       <div className="flex-1 app-scroll-container p-0 sm:p-4 max-w-5xl mx-auto w-full space-y-4 pb-12">
         
         {/* Cover Photo & Avatar Header Banner */}
-        <div className="relative rounded-none sm:rounded-3xl bg-slate-900 border-b sm:border border-slate-800 overflow-hidden shadow-2xl">
+        <div className={`relative rounded-none sm:rounded-3xl overflow-hidden ${isMirror ? 'bg-white border-b sm:border border-slate-300 shadow-md' : 'bg-slate-900 border-b sm:border border-slate-800 shadow-2xl'}`}>
           {/* Cover Image */}
-          <div className="h-44 sm:h-64 w-full relative bg-slate-950">
+          <div className="h-44 sm:h-64 w-full relative bg-slate-900">
             <img
               src={profile.coverImage || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200'}
               alt="Cover"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+            <div className={`absolute inset-0 ${isMirror ? 'bg-gradient-to-t from-white via-white/30 to-transparent' : 'bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent'}`} />
           </div>
 
           {/* Overlapping Profile Info Bar */}
@@ -228,29 +231,29 @@ export const ProfilView: React.FC = () => {
 
               <div className="space-y-1">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-black text-white">{profile.name}</h1>
+                  <h1 className={`text-xl sm:text-2xl font-black ${isMirror ? 'text-slate-950' : 'text-white'}`}>{profile.name}</h1>
                   <span
                     className={`inline-block text-[11px] px-3 py-0.5 rounded-full font-black border ${
                       profile.role === 'ADMIN'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                        ? isMirror ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-amber-500/20 text-amber-300 border-amber-500/50'
                         : profile.role === 'MODERATOR'
-                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/50'
-                        : 'bg-slate-800 text-slate-300 border-slate-700'
+                        ? isMirror ? 'bg-purple-100 text-purple-900 border-purple-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/50'
+                        : isMirror ? 'bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-800 text-slate-300 border-slate-700'
                     }`}
                   >
                     ROLA: {profile.role}
                   </span>
                 </div>
 
-                <p className="text-xs text-amber-300 font-semibold">{profile.title}</p>
-                <p className="text-xs text-slate-300 max-w-md line-clamp-2">{profile.bio}</p>
+                <p className={`text-xs font-bold ${isMirror ? 'text-amber-800' : 'text-amber-300'}`}>{profile.title}</p>
+                <p className={`text-xs max-w-md line-clamp-2 ${isMirror ? 'text-slate-800 font-semibold' : 'text-slate-200'}`}>{profile.bio}</p>
               </div>
             </div>
 
             {/* Action Edit Profile Button */}
             <button
               onClick={handleOpenEditModal}
-              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all shrink-0 cursor-pointer"
             >
               <Edit3 className="w-4 h-4" /> EDYTUJ PROFIL
             </button>
@@ -258,14 +261,14 @@ export const ProfilView: React.FC = () => {
 
           {/* XP Progress Bar */}
           <div className="px-4 sm:px-6 pb-4">
-            <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div className={`p-3 rounded-2xl border space-y-1.5 ${isMirror ? 'bg-slate-50 border-slate-300' : 'bg-slate-950/80 border-slate-800'}`}>
               <div className="flex justify-between items-center text-xs font-bold">
-                <span className="text-amber-300 flex items-center gap-1.5">
+                <span className={`flex items-center gap-1.5 ${isMirror ? 'text-amber-800' : 'text-amber-300'}`}>
                   <Crown className="w-3.5 h-3.5" /> Poziom Użytkownika {profile.level}
                 </span>
-                <span className="text-slate-400 font-mono">{profile.xp} / {profile.maxXp} XP ({xpPercent}%)</span>
+                <span className={`font-mono ${isMirror ? 'text-slate-700' : 'text-slate-400'}`}>{profile.xp} / {profile.maxXp} XP ({xpPercent}%)</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+              <div className={`w-full h-2 rounded-full border overflow-hidden ${isMirror ? 'bg-slate-200 border-slate-300' : 'bg-slate-900 border-slate-800'}`}>
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-300 transition-all duration-500"
                   style={{ width: `${xpPercent}%` }}
@@ -276,24 +279,30 @@ export const ProfilView: React.FC = () => {
         </div>
 
         {/* MOJE MIASTO (MINI WHITEOUT) CARD */}
-        <div className="mx-2 sm:mx-0 p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className={`mx-2 sm:mx-0 p-4 sm:p-5 rounded-3xl border shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 ${
+          isMirror
+            ? 'bg-gradient-to-r from-sky-50 via-white to-cyan-100 border-cyan-400 text-slate-950 shadow-sky-500/10'
+            : 'bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/90 border-cyan-500/40 text-slate-100 shadow-2xl'
+        }`}>
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-800 flex items-center justify-center shadow-lg border border-cyan-400/50 shrink-0">
-              <Building2 className="w-6 h-6 text-cyan-200" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-800 flex items-center justify-center shadow-lg border border-cyan-400/50 shrink-0 text-white">
+              <Building2 className="w-6 h-6" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-black text-white font-serif uppercase tracking-wide">
+                <h3 className={`text-sm font-black font-serif uppercase tracking-wide ${isMirror ? 'text-slate-950' : 'text-white'}`}>
                   MOJE MIASTO (MINI WHITEOUT)
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono">
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black font-mono border ${
+                  isMirror ? 'bg-cyan-100 text-cyan-900 border-cyan-300' : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                }`}>
                   LVL {profile.cityData?.level || 1}
                 </span>
               </div>
-              <p className="text-xs text-amber-300 font-semibold mt-0.5">
+              <p className={`text-xs font-black mt-0.5 ${isMirror ? 'text-sky-800' : 'text-amber-300'}`}>
                 {CITY_LEVELS.find((l) => l.level === (profile.cityData?.level || 1))?.title || 'Osada Ocalałych'}
               </p>
-              <p className="text-[11px] text-slate-300 mt-1 line-clamp-1">
+              <p className={`text-xs mt-1 line-clamp-1 font-semibold ${isMirror ? 'text-slate-800' : 'text-slate-300'}`}>
                 {CITY_LEVELS.find((l) => l.level === (profile.cityData?.level || 1))?.desc}
               </p>
             </div>
@@ -301,7 +310,7 @@ export const ProfilView: React.FC = () => {
 
           <button
             onClick={() => setActiveView('miasto')}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-600/30 cursor-pointer shrink-0"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-600/30 cursor-pointer shrink-0"
           >
             <span>ZOBACZ PEŁNE MIASTO</span>
             <ArrowRight className="w-4 h-4" />
@@ -309,13 +318,13 @@ export const ProfilView: React.FC = () => {
         </div>
 
         {/* Profile Tabs: POSTY | MEDIA | OSIĄGNIĘCIA */}
-        <div className="flex items-center gap-2 border-b border-slate-800/80 px-2 sm:px-0">
+        <div className={`flex items-center gap-2 border-b px-2 sm:px-0 ${isMirror ? 'border-slate-300' : 'border-slate-800/80'}`}>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-4 py-3 text-xs font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+            className={`px-4 py-3 text-xs font-black flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'posts'
-                ? 'border-amber-500 text-amber-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? isMirror ? 'border-sky-600 text-sky-700' : 'border-amber-500 text-amber-300'
+                : isMirror ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileText className="w-4 h-4" /> POSTY ({myPosts.length})
@@ -323,10 +332,10 @@ export const ProfilView: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('media')}
-            className={`px-4 py-3 text-xs font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+            className={`px-4 py-3 text-xs font-black flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'media'
-                ? 'border-amber-500 text-amber-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? isMirror ? 'border-sky-600 text-sky-700' : 'border-amber-500 text-amber-300'
+                : isMirror ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Video className="w-4 h-4" /> MEDIA ({myReels.length})
@@ -334,10 +343,10 @@ export const ProfilView: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`px-4 py-3 text-xs font-extrabold flex items-center gap-2 border-b-2 transition-all ${
+            className={`px-4 py-3 text-xs font-black flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'achievements'
-                ? 'border-amber-500 text-amber-300'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? isMirror ? 'border-sky-600 text-sky-700' : 'border-amber-500 text-amber-300'
+                : isMirror ? 'border-transparent text-slate-600 hover:text-slate-950' : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Award className="w-4 h-4" /> OSIĄGNIĘCIA I KARTA
@@ -348,7 +357,7 @@ export const ProfilView: React.FC = () => {
         {activeTab === 'posts' && (
           <div className="space-y-4 px-2 sm:px-0">
             {/* Create Post Form */}
-            <form onSubmit={handleCreatePost} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+            <form onSubmit={handleCreatePost} className={`p-4 rounded-2xl border space-y-3 ${isMirror ? 'bg-white border-slate-300 shadow-sm' : 'bg-slate-900/80 border-slate-800'}`}>
               <div className="flex items-center gap-3">
                 <AvatarWithFrame src={profile.avatar} frame={profile.avatarFrame} size="sm" />
                 <input
@@ -356,12 +365,18 @@ export const ProfilView: React.FC = () => {
                   placeholder="Napisz coś na swojej ścianie..."
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                  className={`flex-1 border rounded-xl px-3.5 py-2 text-xs focus:outline-none ${
+                    isMirror
+                      ? 'bg-slate-50 border-slate-300 text-slate-950 placeholder:text-slate-500 focus:border-sky-500'
+                      : 'bg-slate-950 border-slate-800 text-white focus:border-amber-500'
+                  }`}
                 />
                 <button
                   type="submit"
                   disabled={!newPostContent.trim()}
-                  className="px-4 py-2 rounded-xl bg-amber-500 text-black font-extrabold text-xs disabled:opacity-40"
+                  className={`px-4 py-2 rounded-xl text-xs font-black disabled:opacity-40 cursor-pointer ${
+                    isMirror ? 'bg-sky-600 text-white hover:bg-sky-500' : 'bg-amber-500 text-black'
+                  }`}
                 >
                   Opublikuj
                 </button>
@@ -370,27 +385,27 @@ export const ProfilView: React.FC = () => {
 
             {/* Posts List or Clean Empty State */}
             {myPosts.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-                <Sparkles className="w-8 h-8 text-amber-400 mx-auto" />
-                <p className="text-sm font-bold text-white">Brak wpisów użytkownika</p>
-                <p className="text-xs text-slate-400">Nie opublikowano jeszcze żadnych postów na Ścianie.</p>
+              <div className={`p-8 text-center rounded-2xl border space-y-2 ${isMirror ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900/40 border-slate-800/80'}`}>
+                <Sparkles className="w-8 h-8 text-sky-500 mx-auto" />
+                <p className={`text-sm font-black ${isMirror ? 'text-slate-950' : 'text-white'}`}>Brak wpisów użytkownika</p>
+                <p className={`text-xs ${isMirror ? 'text-slate-600' : 'text-slate-400'}`}>Nie opublikowano jeszcze żadnych postów na Ścianie.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {myPosts.map((post) => (
-                  <div key={post.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
+                  <div key={post.id} className={`p-4 rounded-2xl border space-y-3 ${isMirror ? 'bg-white border-slate-300 shadow-sm text-slate-950' : 'bg-slate-900/80 border-slate-800 text-slate-200'}`}>
                     <div className="flex items-center gap-3">
                       <AvatarWithFrame src={post.authorAvatar} frame={profile.avatarFrame} size="sm" />
                       <div>
-                        <span className="text-xs font-bold text-white block">{post.authorName}</span>
-                        <span className="text-[10px] text-slate-400">{post.createdAt}</span>
+                        <span className={`text-xs font-black block ${isMirror ? 'text-slate-950' : 'text-white'}`}>{post.authorName}</span>
+                        <span className={`text-[10px] ${isMirror ? 'text-slate-500' : 'text-slate-400'}`}>{post.createdAt}</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-200">{post.content}</p>
-                    <div className="flex items-center gap-4 text-xs text-slate-400 pt-2 border-t border-slate-800">
+                    <p className={`text-xs font-medium ${isMirror ? 'text-slate-800' : 'text-slate-200'}`}>{post.content}</p>
+                    <div className={`flex items-center gap-4 text-xs pt-2 border-t ${isMirror ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'}`}>
                       <button
                         onClick={() => likePost(post.id)}
-                        className={`flex items-center gap-1 font-bold ${post.isLiked ? 'text-rose-400' : 'hover:text-white'}`}
+                        className={`flex items-center gap-1 font-bold ${post.isLiked ? 'text-rose-600' : 'hover:text-sky-600'}`}
                       >
                         <Heart className="w-3.5 h-3.5" /> {post.likes}
                       </button>
@@ -409,18 +424,18 @@ export const ProfilView: React.FC = () => {
         {activeTab === 'media' && (
           <div className="px-2 sm:px-0">
             {myReels.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-                <Video className="w-8 h-8 text-purple-400 mx-auto" />
-                <p className="text-sm font-bold text-white">Brak opublikowanych multimediów</p>
-                <p className="text-xs text-slate-400">Twórz i udostępniaj rolki w sekcji REELS!</p>
+              <div className={`p-8 text-center rounded-2xl border space-y-2 ${isMirror ? 'bg-white border-slate-300 text-slate-900' : 'bg-slate-900/40 border-slate-800/80'}`}>
+                <Video className="w-8 h-8 text-sky-500 mx-auto" />
+                <p className={`text-sm font-black ${isMirror ? 'text-slate-950' : 'text-white'}`}>Brak opublikowanych multimediów</p>
+                <p className={`text-xs ${isMirror ? 'text-slate-600' : 'text-slate-400'}`}>Twórz i udostępniaj rolki w sekcji REELS!</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {myReels.map((reel) => (
-                  <div key={reel.id} className="relative aspect-video rounded-xl overflow-hidden border border-slate-800 group">
+                  <div key={reel.id} className="relative aspect-video rounded-xl overflow-hidden border border-slate-300 dark:border-slate-800 group shadow-sm">
                     <img src={reel.videoBg} alt={reel.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-2.5 flex flex-col justify-end">
-                      <span className="text-xs font-bold text-white truncate">{reel.title}</span>
+                      <span className="text-xs font-bold text-white truncate drop-shadow">{reel.title}</span>
                     </div>
                   </div>
                 ))}
@@ -433,14 +448,18 @@ export const ProfilView: React.FC = () => {
         {activeTab === 'achievements' && (
           <div className="space-y-4 px-2 sm:px-0">
             {/* POKER KOŚCI STATS CARD */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950/30 to-purple-950/30 border border-cyan-500/40 space-y-4 shadow-xl">
+            <div className={`p-5 rounded-2xl border space-y-4 shadow-md ${
+              isMirror
+                ? 'bg-white border-cyan-300 text-slate-950 shadow-sky-500/10'
+                : 'bg-gradient-to-r from-slate-900 via-cyan-950/30 to-purple-950/30 border-cyan-500/40 text-slate-100 shadow-xl'
+            }`}>
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold text-cyan-300 flex items-center gap-2">
-                  <Dices className="w-4 h-4 text-cyan-400" /> POKER KOŚCI – KARTA PORTALOWA
+                <h3 className={`text-sm font-black flex items-center gap-2 ${isMirror ? 'text-cyan-900' : 'text-cyan-300'}`}>
+                  <Dices className="w-4 h-4 text-cyan-600 dark:text-cyan-400" /> POKER KOŚCI – KARTA PORTALOWA
                 </h3>
                 <button
                   onClick={() => setActiveView('gry')}
-                  className="text-xs text-cyan-400 hover:underline font-bold flex items-center gap-1"
+                  className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline font-bold flex items-center gap-1"
                 >
                   Zagraj Teraz <ArrowRight className="w-3.5 h-3.5" />
                 </button>

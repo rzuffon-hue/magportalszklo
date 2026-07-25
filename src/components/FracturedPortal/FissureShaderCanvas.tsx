@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 
 export const FissureShaderCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { shaderQuality } = useApp();
+  const { shaderQuality, portalTheme } = useApp();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,15 +36,17 @@ export const FissureShaderCanvas: React.FC = () => {
 
     window.addEventListener('mousemove', handleMouseMove);
 
+    const isMirror = portalTheme === 'lustrzany';
+
     // Light nodes corresponding to the centers of the 7 shards
     const lightNodes = [
-      { xPct: 0.15, yPct: 0.28, color: '#a855f7', radiusPct: 0.22, intensity: 0.8 }, // CZATY (Violet)
-      { xPct: 0.48, yPct: 0.22, color: '#38bdf8', radiusPct: 0.28, intensity: 0.9 }, // ŚCIANA (Blue/Slate)
-      { xPct: 0.82, yPct: 0.25, color: '#f43f5e', radiusPct: 0.22, intensity: 0.85 }, // REELS (Crimson)
-      { xPct: 0.16, yPct: 0.68, color: '#10b981', radiusPct: 0.20, intensity: 0.75 }, // GRUPY (Emerald)
-      { xPct: 0.82, yPct: 0.65, color: '#06b6d4', radiusPct: 0.20, intensity: 0.8 }, // GRY (Cyan)
-      { xPct: 0.40, yPct: 0.85, color: '#f59e0b', radiusPct: 0.22, intensity: 0.85 }, // WYDARZENIA (Amber)
-      { xPct: 0.78, yPct: 0.88, color: '#eab308', radiusPct: 0.20, intensity: 0.8 }  // PROFIL (Gold)
+      { xPct: 0.15, yPct: 0.28, color: isMirror ? '#020617' : '#a855f7', radiusPct: 0.22, intensity: 0.8 }, // CZATY
+      { xPct: 0.48, yPct: 0.22, color: isMirror ? '#334155' : '#38bdf8', radiusPct: 0.28, intensity: 0.9 }, // ŚCIANA
+      { xPct: 0.82, yPct: 0.25, color: isMirror ? '#0f172a' : '#f43f5e', radiusPct: 0.22, intensity: 0.85 }, // REELS
+      { xPct: 0.16, yPct: 0.68, color: isMirror ? '#1e293b' : '#10b981', radiusPct: 0.20, intensity: 0.75 }, // GRUPY
+      { xPct: 0.82, yPct: 0.65, color: isMirror ? '#0f172a' : '#06b6d4', radiusPct: 0.20, intensity: 0.8 }, // GRY
+      { xPct: 0.40, yPct: 0.85, color: isMirror ? '#334155' : '#f59e0b', radiusPct: 0.22, intensity: 0.85 }, // WYDARZENIA
+      { xPct: 0.78, yPct: 0.88, color: isMirror ? '#020617' : '#eab308', radiusPct: 0.20, intensity: 0.8 }  // PROFIL
     ];
 
     // Particles along ambient light field
@@ -53,9 +55,9 @@ export const FissureShaderCanvas: React.FC = () => {
       y: Math.random() * height,
       vx: (Math.random() - 0.5) * 0.4,
       vy: (Math.random() - 0.5) * 0.4,
-      size: Math.random() * 2 + 0.8,
+      size: Math.random() * (isMirror ? 2.5 : 2) + 0.8,
       alpha: Math.random() * 0.6 + 0.2,
-      color: lightNodes[Math.floor(Math.random() * lightNodes.length)].color
+      color: isMirror ? '#ffffff' : lightNodes[Math.floor(Math.random() * lightNodes.length)].color
     }));
 
     let startTime = Date.now();
@@ -67,8 +69,8 @@ export const FissureShaderCanvas: React.FC = () => {
       mouseX += (targetMouseX - mouseX) * 0.05;
       mouseY += (targetMouseY - mouseY) * 0.05;
 
-      // Dark background obsidian canvas
-      ctx.fillStyle = '#07090e';
+      // Background canvas
+      ctx.fillStyle = isMirror ? '#dbe4ee' : '#07090e';
       ctx.fillRect(0, 0, width, height);
 
       // 1. Render Diffused Shard Light Emitters underneath
@@ -80,9 +82,15 @@ export const FissureShaderCanvas: React.FC = () => {
         const radius = baseRadius * pulse;
 
         const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-        grad.addColorStop(0, `${node.color}55`); // 33% opacity
-        grad.addColorStop(0.4, `${node.color}22`);
-        grad.addColorStop(1, 'transparent');
+        if (isMirror) {
+          grad.addColorStop(0, `${node.color}66`); 
+          grad.addColorStop(0.5, `${node.color}22`);
+          grad.addColorStop(1, 'transparent');
+        } else {
+          grad.addColorStop(0, `${node.color}55`); // 33% opacity
+          grad.addColorStop(0.4, `${node.color}22`);
+          grad.addColorStop(1, 'transparent');
+        }
 
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -91,13 +99,19 @@ export const FissureShaderCanvas: React.FC = () => {
       });
 
       // 2. Mouse Glow Light
-      const mouseGrad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 250);
-      mouseGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
-      mouseGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.04)');
-      mouseGrad.addColorStop(1, 'transparent');
+      const mouseGrad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, isMirror ? 320 : 250);
+      if (isMirror) {
+        mouseGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        mouseGrad.addColorStop(0.4, 'rgba(15, 23, 42, 0.15)');
+        mouseGrad.addColorStop(1, 'transparent');
+      } else {
+        mouseGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+        mouseGrad.addColorStop(0.5, 'rgba(56, 189, 248, 0.04)');
+        mouseGrad.addColorStop(1, 'transparent');
+      }
       ctx.fillStyle = mouseGrad;
       ctx.beginPath();
-      ctx.arc(mouseX, mouseY, 250, 0, Math.PI * 2);
+      ctx.arc(mouseX, mouseY, isMirror ? 320 : 250, 0, Math.PI * 2);
       ctx.fill();
 
       // 3. Floating Ember Particles

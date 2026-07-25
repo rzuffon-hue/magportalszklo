@@ -50,8 +50,11 @@ export const CzatyView: React.FC = () => {
     addGroupChatMember,
     removeGroupChatMember,
     updateGroupMemberRole,
-    leaveGroupChat
+    leaveGroupChat,
+    portalTheme
   } = useApp();
+
+  const isMirror = portalTheme === 'lustrzany';
 
   // Navigation & Search State
   const [listSearch, setListSearch] = useState('');
@@ -232,40 +235,47 @@ export const CzatyView: React.FC = () => {
   const isCurrentGroupAdmin = activeChat?.type === 'group' && activeChat.members.some(m => m.userId === profile.id && m.role === 'admin');
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className={`h-full w-full flex flex-col overflow-hidden font-sans ${isMirror ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'}`}>
       
       {/* 1. TOP COMPACT HEADER */}
-      <div className="shrink-0 h-14 px-3 sm:px-6 bg-slate-950/90 border-b border-purple-500/20 backdrop-blur-xl flex items-center justify-between z-20">
+      <div className={`shrink-0 h-14 px-3 sm:px-6 border-b backdrop-blur-xl flex items-center justify-between z-20 ${
+        isMirror ? 'bg-white/95 border-slate-300 text-slate-950 shadow-sm' : 'bg-slate-950/90 border-purple-500/20 text-slate-100'
+      }`}>
         <div className="flex items-center gap-2">
           {activeTabMobile === 'chat' && (
             <button
               onClick={() => setActiveTabMobile('list')}
-              className="md:hidden p-2 rounded-xl bg-slate-900 text-purple-300 hover:text-white border border-slate-800"
+              className={`md:hidden p-2 rounded-xl border ${
+                isMirror ? 'bg-slate-100 text-purple-700 border-slate-300' : 'bg-slate-900 text-purple-300 hover:text-white border border-slate-800'
+              }`}
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
 
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30">
+            <div className={`p-1.5 rounded-xl border ${
+              isMirror ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-purple-600/20 text-purple-400 border border-purple-500/30'
+            }`}>
               <MessageSquare className="w-4 h-4" />
             </div>
-            <h1 className="text-sm font-black tracking-wide text-white uppercase font-serif">CZATY</h1>
+            <h1 className={`text-sm font-black tracking-wide uppercase font-serif ${isMirror ? 'text-slate-950' : 'text-slate-100'}`}>CZATY</h1>
           </div>
         </div>
 
         {/* Action Buttons: Search & New Chat */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowListSearchInput(!showListSearchInput)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${
-              showListSearchInput
-                ? 'bg-purple-950 border-purple-500 text-purple-200'
-                : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+            onClick={() => {
+              setShowNewChatModal(true);
+              setNewChatType('direct');
+            }}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              isMirror ? 'border-slate-300 bg-white text-slate-800 hover:border-sky-500' : 'border-slate-700/60 text-slate-200 hover:border-sky-400'
             }`}
           >
-            <Search className="w-3.5 h-3.5 text-purple-400" />
-            <span className="hidden sm:inline">wyszukaj</span>
+            <Search className="w-3.5 h-3.5 text-sky-500" />
+            <span className="hidden sm:inline">wyszukaj użytkownika</span>
           </button>
 
           <button
@@ -274,10 +284,10 @@ export const CzatyView: React.FC = () => {
               setNewChatType('select');
               setGroupStep(1);
             }}
-            className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-1.5 shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-black flex items-center gap-1.5 shadow-lg shadow-sky-600/30 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>nowa rozmowa</span>
+            <span>+ Nowa rozmowa</span>
           </button>
         </div>
       </div>
@@ -285,26 +295,30 @@ export const CzatyView: React.FC = () => {
       {/* 2. MAIN TWO-COLUMN RESPONSIVE LAYOUT */}
       <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden relative">
         
-        {/* LEFT PANEL: CONVERSATION LIST (Visible on desktop or when activeTabMobile === 'list') */}
+        {/* LEFT PANEL: CONVERSATION LIST */}
         <div
-          className={`w-full md:w-80 lg:w-96 border-r border-slate-800/80 bg-slate-950 flex flex-col shrink-0 h-full overflow-hidden ${
-            activeTabMobile === 'chat' ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`w-full md:w-80 lg:w-96 border-r flex flex-col shrink-0 h-full overflow-hidden ${
+            isMirror ? 'border-slate-300 bg-white' : 'border-slate-800/80 bg-slate-950'
+          } ${activeTabMobile === 'chat' ? 'hidden md:flex' : 'flex'}`}
         >
           {/* List Search Bar Toggle */}
           {showListSearchInput && (
-            <div className="p-2.5 border-b border-slate-800/80 bg-slate-900/60 animate-in fade-in duration-150">
+            <div className={`p-2.5 border-b animate-in fade-in duration-150 ${isMirror ? 'border-slate-200 bg-slate-50' : 'border-slate-800/80 bg-slate-900/60'}`}>
               <div className="relative">
-                <Search className="w-4 h-4 text-purple-400 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-purple-500 absolute left-3 top-2.5" />
                 <input
                   type="text"
                   placeholder="Szukaj po nazwie lub opisie..."
                   value={listSearch}
                   onChange={(e) => setListSearch(e.target.value)}
-                  className="w-full pl-9 pr-8 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  className={`w-full pl-9 pr-8 py-1.5 rounded-xl border text-xs focus:outline-none ${
+                    isMirror
+                      ? 'bg-white border-slate-300 text-slate-950 placeholder-slate-500 focus:border-purple-500'
+                      : 'bg-slate-950 border-slate-800 text-slate-200 placeholder-slate-500 focus:border-purple-500'
+                  }`}
                 />
                 {listSearch && (
-                  <button onClick={() => setListSearch('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-white">
+                  <button onClick={() => setListSearch('')} className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -315,10 +329,10 @@ export const CzatyView: React.FC = () => {
           {/* Conversation Cards List */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {filteredChats.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center space-y-2 h-64">
-                <MessageSquare className="w-8 h-8 text-purple-400/30" />
-                <p className="font-bold text-slate-300">Brak konwersacji</p>
-                <p className="text-[11px] text-slate-500">Kliknij „+ nowa rozmowa”, aby napisać do znajomego!</p>
+              <div className="p-8 text-center text-xs flex flex-col items-center justify-center space-y-2 h-64">
+                <MessageSquare className="w-8 h-8 text-purple-500/40" />
+                <p className={`font-bold ${isMirror ? 'text-slate-800' : 'text-slate-300'}`}>Brak konwersacji</p>
+                <p className={`text-[11px] ${isMirror ? 'text-slate-500' : 'text-slate-500'}`}>Kliknij „+ nowa rozmowa”, aby napisać do znajomego!</p>
               </div>
             ) : (
               filteredChats.map((chat) => {
@@ -331,14 +345,20 @@ export const CzatyView: React.FC = () => {
                     onClick={() => handleSelectChat(chat.id)}
                     className={`p-2.5 rounded-2xl cursor-pointer transition-all flex items-center gap-3 border ${
                       isSelected
-                        ? 'bg-purple-950/70 border-purple-500/60 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
-                        : 'bg-slate-900/40 border-slate-800/60 hover:bg-slate-900 hover:border-purple-500/30'
+                        ? isMirror
+                          ? 'bg-sky-100 border-sky-400 text-sky-950 shadow-sm'
+                          : 'bg-purple-950/70 border-purple-500/60 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+                        : isMirror
+                          ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-900'
+                          : 'bg-slate-900/40 border-slate-800/60 hover:bg-slate-900 hover:border-purple-500/30'
                     }`}
                   >
                     {/* Avatar Display */}
                     <div className="relative shrink-0">
                       {isGroup ? (
-                        <div className="w-10 h-10 rounded-full bg-slate-900 ring-2 ring-purple-500/40 flex items-center justify-center overflow-hidden">
+                        <div className={`w-10 h-10 rounded-full ring-2 flex items-center justify-center overflow-hidden ${
+                          isMirror ? 'bg-slate-200 ring-sky-400' : 'bg-slate-900 ring-purple-500/40'
+                        }`}>
                           <img
                             src={chat.avatar || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300'}
                             alt={chat.name}
@@ -356,12 +376,12 @@ export const CzatyView: React.FC = () => {
 
                       {!isGroup && (
                         <span
-                          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-black ${
+                          className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-black ${
                             chat.user?.status === 'online'
                               ? 'bg-emerald-500'
                               : chat.user?.status === 'ingame'
                               ? 'bg-amber-400'
-                              : 'bg-slate-600'
+                              : 'bg-slate-400'
                           }`}
                         />
                       )}
@@ -370,25 +390,29 @@ export const CzatyView: React.FC = () => {
                     {/* Content Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-white truncate flex items-center gap-1">
+                        <span className={`text-xs font-black truncate flex items-center gap-1 ${
+                          isMirror ? 'text-slate-950' : 'text-white'
+                        }`}>
                           {isGroup ? chat.name : chat.user?.name}
                           {isGroup && (
-                            <span className="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1 rounded font-mono">
+                            <span className={`text-[9px] px-1 rounded font-mono border ${
+                              isMirror ? 'bg-sky-100 text-sky-900 border-sky-300' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                            }`}>
                               GRUPA
                             </span>
                           )}
                         </span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{chat.lastMessageTime}</span>
+                        <span className={`text-[10px] shrink-0 font-medium ${isMirror ? 'text-slate-500' : 'text-slate-400'}`}>{chat.lastMessageTime}</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-2 mt-0.5">
-                        <p className="text-xs text-slate-400 truncate flex-1">
+                        <p className={`text-xs truncate flex-1 ${isMirror ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>
                           {chat.lastMessage || 'Rozpoczęto rozmowę...'}
                         </p>
 
                         {/* Unread Badge */}
                         {chat.unreadCount && chat.unreadCount > 0 ? (
-                          <span className="px-1.5 py-0.5 rounded-full bg-purple-600 text-white font-extrabold text-[10px] min-w-[18px] text-center shadow-md animate-pulse shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-full bg-sky-600 text-white font-black text-[10px] min-w-[18px] text-center shadow-md shrink-0">
                             {chat.unreadCount}
                           </span>
                         ) : null}
@@ -401,16 +425,18 @@ export const CzatyView: React.FC = () => {
           </div>
         </div>
 
-        {/* RIGHT PANEL: ACTIVE CHAT THREAD (Visible on desktop or when activeTabMobile === 'chat') */}
+        {/* RIGHT PANEL: ACTIVE CHAT THREAD */}
         <div
-          className={`flex-1 flex flex-col bg-slate-950/95 h-full overflow-hidden ${
-            activeTabMobile === 'list' ? 'hidden md:flex' : 'flex'
-          }`}
+          className={`flex-1 flex flex-col h-full overflow-hidden ${
+            isMirror ? 'bg-slate-50/90' : 'bg-slate-950/95'
+          } ${activeTabMobile === 'list' ? 'hidden md:flex' : 'flex'}`}
         >
           {activeChat ? (
             <>
               {/* Active Chat Header */}
-              <div className="shrink-0 h-14 px-4 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between backdrop-blur-xl z-10">
+              <div className={`shrink-0 h-14 px-4 border-b flex items-center justify-between backdrop-blur-xl z-10 ${
+                isMirror ? 'bg-white border-slate-300 text-slate-950 shadow-sm' : 'bg-slate-900/80 border-slate-800 text-slate-100'
+              }`}>
                 <div
                   onClick={() => {
                     if (activeChat.type === 'direct' && activeChat.user) {
@@ -427,7 +453,7 @@ export const CzatyView: React.FC = () => {
                       src={activeChat.avatar || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300'}
                       alt={activeChat.name}
                       referrerPolicy="no-referrer"
-                      className="w-9 h-9 rounded-full object-cover ring-2 ring-purple-500/40 group-hover:ring-purple-400 transition-all"
+                      className="w-9 h-9 rounded-full object-cover ring-2 ring-sky-400 group-hover:ring-sky-500 transition-all"
                     />
                   ) : (
                     <AvatarWithFrame
@@ -438,13 +464,15 @@ export const CzatyView: React.FC = () => {
                   )}
 
                   <div>
-                    <h2 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
+                    <h2 className={`text-xs sm:text-sm font-black transition-colors flex items-center gap-1.5 ${
+                      isMirror ? 'text-slate-950 group-hover:text-sky-600' : 'text-white group-hover:text-purple-300'
+                    }`}>
                       {activeChat.type === 'group' ? activeChat.name : activeChat.user?.name}
                       {activeChat.type === 'group' && (
-                        <span className="text-[10px] text-purple-400 font-mono">({activeChat.members.length} osób)</span>
+                        <span className={`text-[10px] font-mono ${isMirror ? 'text-sky-700' : 'text-purple-400'}`}>({activeChat.members.length} osób)</span>
                       )}
                     </h2>
-                    <span className="text-[10px] block text-emerald-400 font-semibold">
+                    <span className="text-[10px] block text-emerald-600 dark:text-emerald-400 font-bold">
                       {activeChat.type === 'group'
                         ? 'Czat grupowy sojuszu'
                         : activeChat.user?.status === 'online'
@@ -467,9 +495,13 @@ export const CzatyView: React.FC = () => {
                         if (foundUser) setViewingProfileUser(foundUser);
                       }
                     }}
-                    className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-purple-300 hover:text-white hover:bg-purple-950/60 transition-all flex items-center gap-1 text-xs font-bold"
+                    className={`p-2 rounded-xl border flex items-center gap-1 text-xs font-bold ${
+                      isMirror
+                        ? 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100'
+                        : 'bg-slate-950 border-slate-800 text-purple-300 hover:text-white hover:bg-purple-950/60'
+                    }`}
                   >
-                    <Info className="w-4 h-4" />
+                    <Info className="w-4 h-4 text-sky-500" />
                     <span className="hidden sm:inline">Informacje</span>
                   </button>
                 </div>
@@ -518,18 +550,24 @@ export const CzatyView: React.FC = () => {
 
                           {/* Reply Quote Banner */}
                           {msg.replyTo && (
-                            <div className="p-2 rounded-xl bg-slate-900/90 border-l-2 border-purple-500 text-[11px] mb-1 opacity-80">
-                              <span className="font-bold text-purple-300 block">{msg.replyTo.senderName}</span>
-                              <p className="text-slate-300 truncate">{msg.replyTo.content}</p>
+                            <div className={`p-2 rounded-xl border-l-2 text-[11px] mb-1 opacity-90 ${
+                              isMirror ? 'bg-sky-50 border-sky-500 text-slate-800' : 'bg-slate-900/90 border-purple-500 text-slate-300'
+                            }`}>
+                              <span className={`font-bold block ${isMirror ? 'text-sky-900' : 'text-purple-300'}`}>{msg.replyTo.senderName}</span>
+                              <p className="truncate">{msg.replyTo.content}</p>
                             </div>
                           )}
 
                           {/* Main Bubble */}
                           <div
-                            className={`p-3 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-lg relative ${
+                            className={`p-3 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm relative ${
                               isMe
-                                ? 'bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 text-white rounded-br-none'
-                                : 'bg-slate-900 text-slate-100 border border-slate-800 rounded-bl-none'
+                                ? isMirror
+                                  ? 'bg-sky-600 text-white rounded-br-none shadow-sky-600/20'
+                                  : 'bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 text-white rounded-br-none'
+                                : isMirror
+                                  ? 'bg-white text-slate-950 border border-slate-300 rounded-bl-none shadow-sm'
+                                  : 'bg-slate-900 text-slate-100 border border-slate-800 rounded-bl-none'
                             }`}
                           >
                             {/* Text Content */}
@@ -537,7 +575,7 @@ export const CzatyView: React.FC = () => {
 
                             {/* Media Attachment */}
                             {msg.mediaUrl && (
-                              <div className="mt-2 rounded-xl overflow-hidden border border-black/30 max-w-sm">
+                              <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 dark:border-black/30 max-w-sm">
                                 <img
                                   src={msg.mediaUrl}
                                   alt="Załącznik"
@@ -548,7 +586,9 @@ export const CzatyView: React.FC = () => {
                             )}
 
                             {/* Timestamp & Status */}
-                            <div className="flex items-center justify-end gap-1 mt-1 opacity-70 text-[9px]">
+                            <div className={`flex items-center justify-end gap-1 mt-1 text-[9px] ${
+                              isMe ? 'text-white/80' : isMirror ? 'text-slate-500' : 'opacity-70'
+                            }`}>
                               <span>{msg.timeAgo || 'Teraz'}</span>
                               {renderMessageStatus(msg)}
                             </div>
@@ -621,16 +661,20 @@ export const CzatyView: React.FC = () => {
               </div>
 
               {/* STICKY BOTTOM COMPOSER (Safe-area aware & iPhone min-font 16px to prevent auto-zoom) */}
-              <div className="shrink-0 p-2 sm:p-3 bg-slate-950 border-t border-slate-800/80 space-y-2">
+              <div className={`shrink-0 p-2 sm:p-3 border-t space-y-2 ${
+                isMirror ? 'bg-white border-slate-300' : 'bg-slate-950 border-slate-800/80'
+              }`}>
                 
                 {/* Reply Banner if set */}
                 {replyingTo && (
-                  <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-purple-500/40 flex items-center justify-between text-xs animate-in slide-in-from-bottom-1 duration-150">
+                  <div className={`px-3 py-1.5 rounded-xl border flex items-center justify-between text-xs animate-in slide-in-from-bottom-1 duration-150 ${
+                    isMirror ? 'bg-sky-50 border-sky-300 text-slate-900' : 'bg-slate-900 border-purple-500/40 text-slate-300'
+                  }`}>
                     <div className="truncate">
-                      <span className="font-bold text-purple-300 block">Odpowiadasz na wiadomość od {replyingTo.senderName}:</span>
-                      <span className="text-slate-300 truncate block">{replyingTo.content}</span>
+                      <span className={`font-bold block ${isMirror ? 'text-sky-900' : 'text-purple-300'}`}>Odpowiadasz na wiadomość od {replyingTo.senderName}:</span>
+                      <span className={`truncate block ${isMirror ? 'text-slate-700' : 'text-slate-300'}`}>{replyingTo.content}</span>
                     </div>
-                    <button onClick={() => setReplyingTo(null)} className="text-slate-400 hover:text-white p-1">
+                    <button onClick={() => setReplyingTo(null)} className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -638,10 +682,12 @@ export const CzatyView: React.FC = () => {
 
                 {/* Attachment Drawer Panel */}
                 {showAttachMenu && (
-                  <div className="p-3 rounded-2xl bg-slate-900 border border-purple-500/30 space-y-3 animate-in zoom-in-95 duration-150">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                      <span className="text-xs font-bold text-purple-300">Wyślij zdjęcie lub GIF</span>
-                      <button onClick={() => setShowAttachMenu(false)} className="text-slate-400 hover:text-white">
+                  <div className={`p-3 rounded-2xl border space-y-3 animate-in zoom-in-95 duration-150 ${
+                    isMirror ? 'bg-slate-50 border-slate-300' : 'bg-slate-900 border-purple-500/30'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-2 ${isMirror ? 'border-slate-200' : 'border-slate-800'}`}>
+                      <span className={`text-xs font-bold ${isMirror ? 'text-sky-900' : 'text-purple-300'}`}>Wyślij zdjęcie lub GIF</span>
+                      <button onClick={() => setShowAttachMenu(false)} className="text-slate-400 hover:text-slate-700">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -650,13 +696,21 @@ export const CzatyView: React.FC = () => {
                     <div className="flex gap-2 text-xs">
                       <button
                         onClick={() => setMediaType('image')}
-                        className={`px-3 py-1 rounded-xl font-bold ${mediaType === 'image' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-400'}`}
+                        className={`px-3 py-1 rounded-xl font-bold cursor-pointer ${
+                          mediaType === 'image'
+                            ? 'bg-sky-600 text-white'
+                            : isMirror ? 'bg-slate-200 text-slate-700' : 'bg-slate-950 text-slate-400'
+                        }`}
                       >
                         Zdjęcie (URL)
                       </button>
                       <button
                         onClick={() => setMediaType('gif')}
-                        className={`px-3 py-1 rounded-xl font-bold ${mediaType === 'gif' ? 'bg-purple-600 text-white' : 'bg-slate-950 text-slate-400'}`}
+                        className={`px-3 py-1 rounded-xl font-bold cursor-pointer ${
+                          mediaType === 'gif'
+                            ? 'bg-sky-600 text-white'
+                            : isMirror ? 'bg-slate-200 text-slate-700' : 'bg-slate-950 text-slate-400'
+                        }`}
                       >
                         Szybki GIF
                       </button>
@@ -669,12 +723,16 @@ export const CzatyView: React.FC = () => {
                           placeholder="Wklej adres URL zdjęcia (https://...)"
                           value={mediaUrlInput}
                           onChange={(e) => setMediaUrlInput(e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-purple-500"
+                          className={`flex-1 px-3 py-2 rounded-xl border text-xs focus:outline-none ${
+                            isMirror
+                              ? 'bg-white border-slate-300 text-slate-950 focus:border-sky-500'
+                              : 'bg-slate-950 border-slate-800 text-white focus:border-purple-500'
+                          }`}
                         />
                         <button
                           onClick={handleSend}
                           disabled={!mediaUrlInput.trim()}
-                          className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-xs disabled:opacity-40"
+                          className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs disabled:opacity-40 cursor-pointer"
                         >
                           Wyślij
                         </button>
@@ -685,7 +743,9 @@ export const CzatyView: React.FC = () => {
                           <div
                             key={idx}
                             onClick={() => handleSelectGif(gif)}
-                            className="aspect-video rounded-xl overflow-hidden border border-slate-800 cursor-pointer hover:border-purple-500 transition-all"
+                            className={`aspect-video rounded-xl overflow-hidden border cursor-pointer hover:border-sky-500 transition-all ${
+                              isMirror ? 'border-slate-300' : 'border-slate-800'
+                            }`}
                           >
                             <img src={gif} alt="GIF" className="w-full h-full object-cover" />
                           </div>
@@ -701,21 +761,25 @@ export const CzatyView: React.FC = () => {
                     <button
                       key={emoji}
                       onClick={() => handleInsertEmoji(emoji)}
-                      className="p-1 hover:bg-slate-900 rounded-lg transition-transform hover:scale-125 shrink-0 cursor-pointer"
+                      className={`p-1 rounded-lg transition-transform hover:scale-125 shrink-0 cursor-pointer ${
+                        isMirror ? 'hover:bg-slate-200' : 'hover:bg-slate-900'
+                      }`}
                     >
                       {emoji}
                     </button>
                   ))}
                 </div>
 
-                {/* Main Composer Form (input min-font 16px to prevent iOS auto-zoom) */}
+                {/* Main Composer Form */}
                 <form onSubmit={handleSend} className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setShowAttachMenu(!showAttachMenu)}
-                    className={`p-2.5 rounded-2xl border transition-all shrink-0 ${
+                    className={`p-2.5 rounded-2xl border transition-all shrink-0 cursor-pointer ${
                       showAttachMenu
-                        ? 'bg-purple-600 text-white border-purple-500'
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : isMirror
+                        ? 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200'
                         : 'bg-slate-900 border-slate-800 text-purple-300 hover:text-white hover:border-slate-700'
                     }`}
                     title="Załącz plik / GIF"
@@ -729,7 +793,11 @@ export const CzatyView: React.FC = () => {
                     onChange={(e) => setMsgInput(e.target.value)}
                     placeholder={`Napisz wiadomość...`}
                     style={{ fontSize: '16px' }}
-                    className="flex-1 px-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    className={`flex-1 px-4 py-2.5 rounded-2xl border focus:outline-none ${
+                      isMirror
+                        ? 'bg-slate-50 border-slate-300 text-slate-950 placeholder-slate-500 focus:border-sky-500'
+                        : 'bg-slate-900 border-slate-800 text-slate-100 placeholder-slate-500 focus:border-purple-500'
+                    }`}
                   />
 
                   <button
@@ -743,10 +811,21 @@ export const CzatyView: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-slate-500 space-y-2">
-              <MessageSquare className="w-12 h-12 text-purple-400/30" />
-              <p className="text-sm font-bold text-slate-300">Wybierz konwersację z listy</p>
-              <p className="text-xs text-slate-500">lub utwórz nową rozmowę przyciskiem na górze</p>
+            <div className="flex flex-col items-center justify-center h-full space-y-3 p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                <MessageSquare className="w-7 h-7" />
+              </div>
+              <p className="text-base font-extrabold text-slate-800 dark:text-slate-100">Brak rozmów</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xs">Znajdź użytkownika i rozpocznij rozmowę.</p>
+              <button
+                onClick={() => {
+                  setShowNewChatModal(true);
+                  setNewChatType('direct');
+                }}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+              >
+                Wyszukaj użytkownika
+              </button>
             </div>
           )}
         </div>

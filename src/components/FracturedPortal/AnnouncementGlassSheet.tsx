@@ -179,7 +179,8 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
   onDismiss,
   isPreview = false
 }) => {
-  const { setActiveView } = useApp();
+  const { setActiveView, portalTheme } = useApp();
+  const isMirror = portalTheme === 'lustrzany';
   const [isChecked, setIsChecked] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isConfirmedDone, setIsConfirmedDone] = useState(false);
@@ -238,7 +239,9 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 select-none overflow-hidden h-[100dvh] max-h-[100dvh] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        isMounted && !isExiting ? 'opacity-100 backdrop-blur-md bg-black/80' : 'opacity-0 backdrop-blur-none bg-black/0 pointer-events-none'
+        isMounted && !isExiting
+          ? isMirror ? 'opacity-100 backdrop-blur-md bg-slate-900/40' : 'opacity-100 backdrop-blur-md bg-black/80'
+          : 'opacity-0 backdrop-blur-none bg-black/0 pointer-events-none'
       }`}
       style={{
         paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)',
@@ -249,44 +252,60 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-700"
         style={{
-          background: `radial-gradient(circle at 50% 50%, ${styleConfig.glowColor} 0%, rgba(3, 5, 12, 0.8) 80%)`,
+          background: isMirror
+            ? `radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15) 0%, rgba(241, 245, 249, 0.6) 80%)`
+            : `radial-gradient(circle at 50% 50%, ${styleConfig.glowColor} 0%, rgba(3, 5, 12, 0.8) 80%)`,
           opacity: isMounted && !isExiting ? 0.85 : 0
         }}
       />
 
       {/* Main Glass Sheet Container */}
       <div
-        className={`relative w-full max-w-2xl max-h-[calc(100dvh-2rem)] flex flex-col rounded-3xl border ${styleConfig.glassBorder} shadow-[0_25px_70px_rgba(0,0,0,0.95)] backdrop-blur-2xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+        className={`relative w-full max-w-2xl max-h-[calc(100dvh-2rem)] flex flex-col rounded-3xl border transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${
+          isMirror
+            ? 'border-sky-300 shadow-[0_25px_70px_rgba(2,132,199,0.2)] bg-white text-slate-950'
+            : `${styleConfig.glassBorder} shadow-[0_25px_70px_rgba(0,0,0,0.95)] backdrop-blur-2xl text-slate-100`
+        } ${
           isMounted && !isExiting
             ? 'translate-y-0 scale-100 opacity-100'
             : 'translate-y-12 scale-95 opacity-0'
         }`}
         style={{
-          background: styleConfig.radialBg,
-          boxShadow: `0 20px 80px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.15), 0 0 30px ${styleConfig.glowColor}`
+          background: isMirror ? '#ffffff' : styleConfig.radialBg,
+          boxShadow: isMirror
+            ? `0 20px 60px rgba(2, 132, 199, 0.2), inset 0 1px 1px rgba(255,255,255,1)`
+            : `0 20px 80px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.15), 0 0 30px ${styleConfig.glowColor}`
         }}
       >
         {/* Subtle Glass Rim Refraction Edge */}
-        <div className="absolute inset-0 rounded-3xl pointer-events-none border border-white/10" />
+        <div className={`absolute inset-0 rounded-3xl pointer-events-none border ${isMirror ? 'border-sky-200/50' : 'border-white/10'}`} />
 
         {/* Category Light Refraction Beam */}
         <div
-          className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 rounded-full blur-3xl pointer-events-none opacity-40"
+          className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 rounded-full blur-3xl pointer-events-none opacity-30"
           style={{ backgroundColor: `rgb(${styleConfig.accentRgb})` }}
         />
 
         {/* 1. GLASS SHEET HEADER BAR */}
-        <div className="relative z-20 flex items-center justify-between px-5 sm:px-7 py-4 border-b border-white/10 bg-slate-950/40 backdrop-blur-xl shrink-0">
+        <div className={`relative z-20 flex items-center justify-between px-5 sm:px-7 py-4 border-b shrink-0 ${
+          isMirror ? 'bg-sky-50/80 border-sky-100' : 'bg-slate-950/40 border-white/10 backdrop-blur-xl'
+        }`}>
           <div className="flex items-center gap-2.5">
             <span
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase border ${styleConfig.badgeBg} ${styleConfig.badgeText} ${styleConfig.badgeBorder} shadow-sm`}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase border shadow-sm ${
+                isMirror
+                  ? 'bg-sky-100 text-sky-900 border-sky-300'
+                  : `${styleConfig.badgeBg} ${styleConfig.badgeText} ${styleConfig.badgeBorder}`
+              }`}
             >
               <CategoryIcon className="w-3.5 h-3.5" />
               {styleConfig.name}
             </span>
 
             {isMandatory && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                isMirror ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+              }`}>
                 OBOWIĄZKOWE
               </span>
             )}
@@ -295,7 +314,9 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
           <div className="flex items-center gap-3">
             {/* Queue Counter if multiple announcements */}
             {totalCount > 1 && (
-              <span className="text-xs font-mono font-bold text-slate-300 bg-slate-900/90 border border-slate-700/80 px-2.5 py-1 rounded-full shadow-inner">
+              <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-full shadow-inner ${
+                isMirror ? 'bg-slate-100 text-slate-800 border border-slate-300' : 'bg-slate-900/90 text-slate-300 border border-slate-700/80'
+              }`}>
                 {currentIndex} / {totalCount}
               </span>
             )}
@@ -304,7 +325,9 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
             {(!isMandatory || isPreview || !onConfirm) && (
               <button
                 onClick={onDismiss || (() => setIsExiting(true))}
-                className="p-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition-all cursor-pointer"
+                className={`p-1.5 rounded-full border transition-all cursor-pointer ${
+                  isMirror ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60'
+                }`}
                 title="Zamknij"
               >
                 <X className="w-4 h-4" />
@@ -317,29 +340,34 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
         <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-5 sm:p-7 space-y-5 custom-scrollbar">
           {/* Optional Graphic Image Header */}
           {announcement.imageUrl && (
-            <div className="relative w-full h-44 sm:h-52 rounded-2xl overflow-hidden border border-white/10 group shadow-lg">
+            <div className={`relative w-full h-44 sm:h-52 rounded-2xl overflow-hidden border group shadow-lg ${
+              isMirror ? 'border-slate-200' : 'border-white/10'
+            }`}>
               <img
                 src={announcement.imageUrl}
                 alt={announcement.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+              <div className={`absolute inset-0 ${
+                isMirror ? 'bg-gradient-to-t from-white/80 via-transparent to-transparent' : 'bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent'
+              }`} />
             </div>
           )}
 
           {/* Event Time & Date Highlight Banner */}
           {(announcement.eventDate || announcement.eventTime) && (
             <div
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-slate-900/70 backdrop-blur-md"
-              style={{
-                boxShadow: `inset 0 0 15px rgba(${styleConfig.accentRgb}, 0.15)`
-              }}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border ${
+                isMirror ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-slate-900/70 border-white/10 text-slate-200'
+              }`}
             >
-              <Calendar className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-              <div className="text-xs font-bold text-slate-200">
-                <span className="text-slate-400">Termin Wydarzenia: </span>
-                <span className="text-white font-mono bg-white/10 px-2 py-0.5 rounded ml-1">
+              <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+              <div className="text-xs font-bold">
+                <span className={isMirror ? 'text-slate-700' : 'text-slate-400'}>Termin Wydarzenia: </span>
+                <span className={`font-mono px-2 py-0.5 rounded ml-1 ${
+                  isMirror ? 'bg-amber-100 text-amber-900 font-black' : 'bg-white/10 text-white'
+                }`}>
                   {announcement.eventDate || 'Dzisiaj'} {announcement.eventTime ? `• ${announcement.eventTime}` : ''}
                 </span>
               </div>
@@ -349,27 +377,35 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
           {/* Title */}
           <div>
             <h2
-              className={`text-xl sm:text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r ${styleConfig.gradientText} drop-shadow-md leading-tight uppercase font-serif`}
+              className={`text-xl sm:text-2xl font-black tracking-tight leading-tight uppercase font-serif ${
+                isMirror ? 'text-slate-950 drop-shadow-none' : `bg-clip-text text-transparent bg-gradient-to-r ${styleConfig.gradientText} drop-shadow-md`
+              }`}
             >
               {announcement.title}
             </h2>
 
             {/* Author info & publication timestamp */}
-            <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-400 font-medium">
+            <div className={`flex items-center gap-2 mt-2 text-[11px] font-medium ${
+              isMirror ? 'text-slate-600' : 'text-slate-400'
+            }`}>
               <img
                 src={announcement.createdByAvatar}
                 alt={announcement.createdByName}
                 referrerPolicy="no-referrer"
-                className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-700"
+                className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-300 dark:ring-slate-700"
               />
-              <span>{announcement.createdByName}</span>
+              <span className="font-bold">{announcement.createdByName}</span>
               <span>•</span>
-              <span className="font-mono text-slate-500">{announcement.createdAt}</span>
+              <span className={`font-mono ${isMirror ? 'text-slate-500' : 'text-slate-500'}`}>{announcement.createdAt}</span>
             </div>
           </div>
 
           {/* Body Text */}
-          <div className="text-sm text-slate-200 leading-relaxed font-sans space-y-3 whitespace-pre-wrap bg-slate-950/40 p-4 rounded-2xl border border-white/5">
+          <div className={`text-sm leading-relaxed font-sans space-y-3 whitespace-pre-wrap p-4 rounded-2xl border font-medium ${
+            isMirror
+              ? 'bg-slate-50 border-slate-200 text-slate-900 shadow-inner'
+              : 'bg-slate-950/40 border-white/5 text-slate-200'
+          }`}>
             {announcement.content}
           </div>
 
@@ -379,7 +415,9 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
               href={announcement.linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-cyan-300 hover:text-white hover:border-cyan-400 transition-all"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all ${
+                isMirror ? 'bg-sky-50 border-sky-300 text-sky-900 hover:bg-sky-100' : 'bg-slate-900 border-slate-700 text-cyan-300 hover:text-white hover:border-cyan-400'
+              }`}
             >
               <ExternalLink className="w-3.5 h-3.5" /> Otwórz załączony link
             </a>
@@ -387,27 +425,31 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
         </div>
 
         {/* 3. STICKY BOTTOM CONFIRMATION & ACTION BAR */}
-        <div className="relative z-20 p-4 sm:p-6 border-t border-white/10 bg-slate-950/90 backdrop-blur-2xl shrink-0 space-y-3">
+        <div className={`relative z-20 p-4 sm:p-6 border-t shrink-0 space-y-3 ${
+          isMirror ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/90 border-white/10 backdrop-blur-2xl'
+        }`}>
           
           {/* Glass Flash Overlay when Confirming */}
           {isConfirming && (
-            <div className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none z-30" />
+            <div className="absolute inset-0 bg-sky-500/20 animate-pulse pointer-events-none z-30" />
           )}
 
           {/* Mandatory Checkbox */}
           {isMandatory && !isConfirmedDone && (
             <div
               onClick={() => setIsChecked(!isChecked)}
-              className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/90 hover:border-slate-700 cursor-pointer transition-all select-none"
+              className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all select-none ${
+                isMirror ? 'bg-white border-slate-300 hover:border-sky-400' : 'bg-slate-900/80 border-slate-800/90 hover:border-slate-700'
+              }`}
             >
-              <button type="button" className="text-amber-400 shrink-0">
+              <button type="button" className="text-amber-500 shrink-0 cursor-pointer">
                 {isChecked ? (
-                  <CheckSquare className="w-5 h-5 text-emerald-400" />
+                  <CheckSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <Square className="w-5 h-5 text-slate-500" />
+                  <Square className={`w-5 h-5 ${isMirror ? 'text-slate-400' : 'text-slate-500'}`} />
                 )}
               </button>
-              <span className="text-xs font-bold text-slate-200">
+              <span className={`text-xs font-bold ${isMirror ? 'text-slate-900' : 'text-slate-200'}`}>
                 Przeczytałem/am i rozumiem treść powyższego ogłoszenia
               </span>
             </div>
@@ -417,7 +459,9 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
           {announcement.portalTargetView && (
             <button
               onClick={handleNavigateCTA}
-              className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-extrabold text-amber-300 hover:text-white flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+              className={`w-full py-2.5 rounded-2xl border text-xs font-extrabold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
+                isMirror ? 'bg-sky-600 hover:bg-sky-500 text-white border-sky-600' : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-amber-300 hover:text-white'
+              }`}
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span>{announcement.ctaLabel || 'PRZEJDŹ DO SEKCJI PORTALU'}</span>
@@ -431,9 +475,11 @@ export const AnnouncementGlassSheet: React.FC<AnnouncementGlassSheetProps> = ({
             onClick={handleConfirmClick}
             className={`w-full py-3.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isConfirmedDone
-                ? 'bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.5)] scale-102'
+                ? 'bg-emerald-500 text-white shadow-lg scale-102'
                 : isMandatory && !isChecked
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                ? isMirror ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300' : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                : isMirror
+                ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-md active:scale-98'
                 : `${styleConfig.btnBg} ${styleConfig.btnHover} ${styleConfig.btnShadow} active:scale-98`
             }`}
           >

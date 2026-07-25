@@ -28,7 +28,11 @@ import {
   Gamepad2,
   RefreshCw,
   Info,
-  Check
+  Check,
+  Palette,
+  Sun,
+  Moon,
+  Zap
 } from 'lucide-react';
 import {
   UserRole,
@@ -55,11 +59,13 @@ export const AdminPanelView: React.FC = () => {
     announcements,
     createPortalAnnouncement,
     deletePortalAnnouncement,
-    setPreviewAnnouncement
+    setPreviewAnnouncement,
+    portalTheme,
+    setPortalTheme
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
-    'users' | 'groups' | 'content' | 'reports' | 'reels' | 'events' | 'announcements'
+    'announcements' | 'theme' | 'users' | 'groups' | 'content' | 'reports' | 'reels' | 'events'
   >('announcements');
 
   const [userSearch, setUserSearch] = useState('');
@@ -243,7 +249,7 @@ export const AdminPanelView: React.FC = () => {
   const activeAnnouncementsCount = announcements.filter((a) => a.status === 'active').length;
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
       {/* Compact Header */}
       <CompactHeader title="Panel Zarządzania Portalu" badge="Uprawnienia Administracyjne" />
 
@@ -253,6 +259,7 @@ export const AdminPanelView: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-800">
           {[
             { id: 'announcements', label: 'Ogłoszenia', icon: Megaphone, count: activeAnnouncementsCount },
+            { id: 'theme', label: 'Motyw Portalu', icon: Palette, count: portalTheme === 'lustrzany' ? 'LUSTRO' : 'MROCZNY' },
             { id: 'users', label: 'Użytkownicy', icon: Users, count: usersList.length },
             { id: 'groups', label: 'Grupy', icon: FolderPlus, count: groups.length },
             { id: 'content', label: 'Treści', icon: FileText, count: posts.length },
@@ -463,6 +470,186 @@ export const AdminPanelView: React.FC = () => {
                   );
                 })
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ================= TAB: MOTYW PORTALU ================= */}
+        {activeTab === 'theme' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Header info */}
+            <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2">
+                <Palette className="w-5 h-5 text-amber-400" />
+                <h3 className="text-sm font-bold text-white font-serif">
+                  Zarządzanie Motywem Graficznym Portalu
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Jako Administrator masz pełną kontrolę nad stylem graficznym Portalu MaG. Przełączaj w czasie rzeczywistym pomiędzy mrocznym obsydianowym portalem a jasnym, krystaliczno-lustrzanym motywem ze stłuczonym szkłem i diamentowymi refleksami.
+              </p>
+            </div>
+
+            {/* Theme options grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Option 1: MROCZNY OBSCUR */}
+              <div
+                onClick={() => setPortalTheme('mroczny')}
+                className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                  portalTheme === 'mroczny'
+                    ? 'bg-gradient-to-b from-slate-900 to-black border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.25)] ring-2 ring-amber-500/50'
+                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90 opacity-80 hover:opacity-100'
+                }`}
+              >
+                {portalTheme === 'mroczny' && (
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-amber-500 text-black text-[10px] font-black tracking-wider uppercase flex items-center gap-1 shadow-md">
+                    <Check className="w-3 h-3 stroke-[3]" /> AKTYWNY
+                  </span>
+                )}
+
+                <div className="space-y-2">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-purple-300">
+                    <Moon className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-base font-extrabold text-white font-serif">
+                    Mroczny Obscur
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Domyślny, głęboki obsydianowy portal z oszronionymi ciemnymi szklanymi tafli, neony szmaragdu i purpury.
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500 font-mono">Styl: Obsydian & Szkło</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPortalTheme('mroczny');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      portalTheme === 'mroczny'
+                        ? 'bg-amber-500 text-black font-black'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {portalTheme === 'mroczny' ? 'Wybrany' : 'Włącz'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Option 2: JASNE LUSTRO (LUSTRZANY) */}
+              <div
+                onClick={() => setPortalTheme('lustrzany')}
+                className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                  portalTheme === 'lustrzany'
+                    ? 'bg-gradient-to-b from-sky-100/90 via-slate-100 to-sky-200/90 border-sky-400 shadow-[0_0_30px_rgba(56,189,248,0.4)] ring-2 ring-sky-400 text-slate-900'
+                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90 opacity-80 hover:opacity-100 text-slate-100'
+                }`}
+              >
+                {portalTheme === 'lustrzany' && (
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-sky-500 text-white text-[10px] font-black tracking-wider uppercase flex items-center gap-1 shadow-md">
+                    <Check className="w-3 h-3 stroke-[3]" /> AKTYWNY
+                  </span>
+                )}
+
+                <div className="space-y-2">
+                  <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center ${
+                    portalTheme === 'lustrzany'
+                      ? 'bg-sky-500/20 border-sky-500/50 text-sky-700'
+                      : 'bg-sky-950/80 border-sky-500/40 text-sky-300'
+                  }`}>
+                    <Sun className="w-5 h-5" />
+                  </div>
+                  <h4 className={`text-base font-extrabold font-serif ${
+                    portalTheme === 'lustrzany' ? 'text-slate-900' : 'text-white'
+                  }`}>
+                    Jasne Lustro
+                  </h4>
+                  <p className={`text-xs leading-relaxed ${
+                    portalTheme === 'lustrzany' ? 'text-slate-700 font-medium' : 'text-slate-400'
+                  }`}>
+                    Jasny, krystaliczno-lustrzany portal z perłowo-srebrzystymi tafli szkła i diamentowymi refleksami.
+                  </p>
+                </div>
+
+                <div className={`pt-3 border-t flex items-center justify-between ${
+                  portalTheme === 'lustrzany' ? 'border-slate-300' : 'border-slate-800/80'
+                }`}>
+                  <span className={`text-[11px] font-mono ${
+                    portalTheme === 'lustrzany' ? 'text-slate-600 font-bold' : 'text-slate-500'
+                  }`}>Styl: Srebrzyste Lustro</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPortalTheme('lustrzany');
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      portalTheme === 'lustrzany'
+                        ? 'bg-sky-600 text-white font-black shadow-md'
+                        : 'bg-sky-950 hover:bg-sky-900 text-sky-200 border border-sky-500/40'
+                    }`}
+                  >
+                    {portalTheme === 'lustrzany' ? 'Wybrany' : 'Włącz'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Option 3: MaG COMIC (KOMIKSOWY) */}
+              <div
+                onClick={() => setPortalTheme('komiksowy')}
+                className={`p-5 rounded-3xl border-3 transition-all cursor-pointer flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                  portalTheme === 'komiksowy'
+                    ? 'bg-amber-300 border-slate-950 text-slate-950 shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] transform -rotate-1'
+                    : 'bg-slate-900/60 border-amber-500/50 hover:border-amber-400 hover:bg-slate-900/90 opacity-80 hover:opacity-100 text-slate-100'
+                }`}
+              >
+                {portalTheme === 'komiksowy' && (
+                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-rose-600 text-white text-[10px] font-black tracking-wider uppercase border-2 border-slate-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transform rotate-3">
+                    BAM! AKTYWNY
+                  </span>
+                )}
+
+                <div className="space-y-2">
+                  <div className={`w-10 h-10 rounded-xl border-2 border-slate-950 flex items-center justify-center ${
+                    portalTheme === 'komiksowy'
+                      ? 'bg-amber-400 text-slate-950 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]'
+                      : 'bg-amber-950/80 border-amber-500/40 text-amber-400'
+                  }`}>
+                    <Zap className="w-5 h-5 fill-amber-400" />
+                  </div>
+                  <h4 className={`text-base font-black uppercase tracking-wider ${
+                    portalTheme === 'komiksowy' ? 'text-slate-950' : 'text-amber-400'
+                  }`}>
+                    MaG Comic!
+                  </h4>
+                  <p className={`text-xs leading-relaxed ${
+                    portalTheme === 'komiksowy' ? 'text-slate-950 font-bold' : 'text-slate-400'
+                  }`}>
+                    Rysowany, superszybski styl komiksowy! Grube kontury, rastry pop-art, dymki dialogowe, jaskrawe barwy i superbohaterski klimat!
+                  </p>
+                </div>
+
+                <div className={`pt-3 border-t flex items-center justify-between ${
+                  portalTheme === 'komiksowy' ? 'border-slate-950' : 'border-slate-800/80'
+                }`}>
+                  <span className={`text-[11px] font-mono ${
+                    portalTheme === 'komiksowy' ? 'text-slate-950 font-black' : 'text-amber-400/80'
+                  }`}>Styl: Pop-Art Superhero</span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPortalTheme('komiksowy');
+                    }}
+                    className={`px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer ${
+                      portalTheme === 'komiksowy'
+                        ? 'bg-slate-950 text-white border-2 border-slate-950 shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]'
+                        : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black border border-slate-950'
+                    }`}
+                  >
+                    {portalTheme === 'komiksowy' ? 'Wybrany!' : 'Włącz!'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

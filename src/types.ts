@@ -1,5 +1,6 @@
 export type AppView = 'home' | 'sciana' | 'czaty' | 'reels' | 'grupy' | 'gry' | 'wydarzenia' | 'profil' | 'admin' | 'miasto';
 
+export type PortalTheme = 'mroczny' | 'lustrzany' | 'komiksowy';
 export type UserRole = 'USER' | 'MODERATOR' | 'R4 MaG' | 'ADMIN';
 export type UserAccountStatus = 'active' | 'blocked';
 export type AvatarFrameStyle = 'standard' | 'ice' | 'gold' | 'emerald' | 'crimson' | 'mag' | 'admin_frame' | 'r4_frame' | 'moderator_frame';
