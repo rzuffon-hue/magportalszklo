@@ -141,15 +141,16 @@ export const DESKTOP_FISSURE_PATHS: string[] = [
   'M 78,76 L 60,100'
 ];
 
-// Shared internal seam lines for Mobile
+// Shared internal seam lines for Mobile derived from exact shared edges of MOBILE_SHARDS
 export const MOBILE_FISSURE_PATHS: string[] = [
-  'M 42,20 L 52,0',
-  'M 42,20 L 0,28',
-  'M 42,20 L 62,34 L 100,26',
-  'M 42,20 L 20,50 L 0,28',
-  'M 20,50 L 48,58',
-  'M 48,58 L 88,52 L 100,26',
-  'M 48,58 L 32,74 L 0,68',
-  'M 32,74 L 56,76 L 100,72',
-  'M 56,76 L 52,100'
+  'M 42,20 L 52,0',              // czaty <-> reels
+  'M 42,20 L 0,28',              // czaty <-> sciana
+  'M 42,20 L 62,34 L 100,26',     // reels <-> sciana
+  'M 0,28 L 20,50 L 48,58',       // sciana <-> grupy
+  'M 48,58 L 88,52 L 100,26',     // sciana <-> gry
+  'M 48,58 L 32,74',              // grupy <-> gry
+  'M 0,68 L 32,74',              // grupy <-> wydarzenia
+  'M 32,74 L 56,76',              // gry <-> wydarzenia
+  'M 56,76 L 100,72',             // gry <-> profil
+  'M 56,76 L 52,100'              // wydarzenia <-> profil
 ];

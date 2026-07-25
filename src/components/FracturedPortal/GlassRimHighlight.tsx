@@ -7,7 +7,7 @@ interface GlassRimHighlightProps {
 
 export const GlassRimHighlight: React.FC<GlassRimHighlightProps> = ({
   clipPath,
-  themeColor = 'rgba(255, 255, 255, 0.35)'
+  themeColor = 'rgba(255, 255, 255, 0.25)'
 }) => {
   if (!clipPath) return null;
 
@@ -25,62 +25,63 @@ export const GlassRimHighlight: React.FC<GlassRimHighlightProps> = ({
       preserveAspectRatio="none"
     >
       <defs>
-        {/* Soft edge blur filter */}
-        <filter id="fissure-soft" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="0.6" result="blur" />
+        {/* Soft natural edge blur - reduced glow */}
+        <filter id="fissure-soft-rim" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="0.4" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
 
-      {/* 1. Dark Micro-fissure Groove (Deep Dark Gap between Shattered Panes) */}
+      {/* Layer 1: Dark Void Shadow Gap (Ciemna szczelina między taflami) */}
       <polygon
         points={points}
         fill="none"
-        stroke="rgba(0, 0, 0, 0.98)"
-        strokeWidth="3.2"
+        stroke="rgba(2, 6, 16, 0.95)"
+        strokeWidth="2.2"
         vectorEffect="non-scaling-stroke"
       />
 
-      {/* 2. Secondary Refractive Shadow Offset Line */}
+      {/* Layer 2: Subtle Subsurface Cold Refraction (Zmniejszony glow o ~60-70%) */}
       <polygon
         points={points}
         fill="none"
-        stroke="rgba(2, 6, 18, 0.9)"
-        strokeWidth="1.8"
+        stroke="rgba(186, 230, 253, 0.25)"
+        strokeWidth="1.0"
         vectorEffect="non-scaling-stroke"
+        filter="url(#fissure-soft-rim)"
+        className="opacity-40 group-hover:opacity-70 transition-opacity duration-300"
       />
 
-      {/* 3. Section Color Subsurface Refraction along Fracture Line */}
+      {/* Layer 3: Section Color Accent Edge */}
       <polygon
         points={points}
         fill="none"
         stroke={themeColor}
-        strokeWidth="1.2"
+        strokeWidth="0.8"
         vectorEffect="non-scaling-stroke"
-        filter="url(#fissure-soft)"
-        className="opacity-40 group-hover:opacity-80 transition-opacity duration-300"
+        className="opacity-30 group-hover:opacity-60 transition-opacity duration-300"
       />
 
-      {/* 4. Ultra-thin Specular Broken Glass Edge Catchlight */}
+      {/* Layer 4: Organic Irregular Frost Coating (Biały szron i śnieżny pył wzdłuż krawędzi) */}
+      <polygon
+        points={points}
+        fill="none"
+        stroke="rgba(240, 249, 255, 0.65)"
+        strokeWidth="1.1"
+        strokeDasharray="1.5 0.8 6 1.8 0.6 0.4 9 2.2 0.8 1.2"
+        vectorEffect="non-scaling-stroke"
+        className="opacity-70 group-hover:opacity-95 transition-opacity duration-300"
+      />
+
+      {/* Layer 5: Fine Specular Catchlight (Refrakcja zimnego światła na szkle) */}
       <polygon
         points={points}
         fill="none"
         stroke="rgba(255, 255, 255, 0.75)"
-        strokeWidth="0.8"
-        strokeDasharray="18 10 28 14 10 6 36 20"
+        strokeWidth="0.4"
+        strokeDasharray="12 6 22 14 6 3 30 18"
         vectorEffect="non-scaling-stroke"
-        className="opacity-70 group-hover:stroke-white group-hover:opacity-100 transition-all duration-300"
-      />
-
-      {/* 5. Focal Point Glints on Cracked Rim Corner Intersections */}
-      <polygon
-        points={points}
-        fill="none"
-        stroke="rgba(255, 255, 255, 0.95)"
-        strokeWidth="1.2"
-        strokeDasharray="1.5 35 2.5 50 2 60"
-        vectorEffect="non-scaling-stroke"
-        className="opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+        className="opacity-60 group-hover:stroke-white group-hover:opacity-90 transition-all duration-300"
       />
     </svg>
   );

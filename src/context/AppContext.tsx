@@ -7,6 +7,11 @@ import {
   UserAccountData,
   Post,
   ChatConversation,
+  ChatMessage,
+  ChatMessageType,
+  ChatMessageReplyTo,
+  ChatMember,
+  AvatarFrameStyle,
   SocialEvent,
   EventType,
   SocialEventAttendee,
@@ -20,7 +25,11 @@ import {
   GroupAnnouncement,
   GameItem,
   Reel,
-  NotificationItem
+  NotificationItem,
+  PortalAnnouncement,
+  AnnouncementConfirmation,
+  AnnouncementCategory,
+  AnnouncementRequirement
 } from '../types';
 import {
   initialProfile,
@@ -29,8 +38,14 @@ import {
   initialEvents,
   initialGames,
   initialReels,
-  initialNotifications
+  initialNotifications,
+  initialAnnouncements
 } from '../data/initialData';
+import {
+  seedUsersDatabase,
+  loadConversationsFromStorage,
+  saveConversationsToStorage
+} from '../services/chatService';
 
 async function hashPin(pin: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -76,6 +91,19 @@ interface AppContextType {
   likePost: (postId: string) => void;
   addPostComment: (postId: string, text: string) => void;
   sendMessage: (chatId: string, text: string) => void;
+
+  // Real Messenger Actions
+  getOrCreateDirectChat: (targetUser: UserProfile | { id: string; name: string; avatar: string; avatarFrame?: AvatarFrameStyle; role?: UserRole; title?: string }) => string;
+  createGroupChat: (groupName: string, selectedUserIds: string[], avatarUrl?: string) => string;
+  sendChatMessage: (chatId: string, content: string, type?: ChatMessageType, mediaUrl?: string, replyTo?: ChatMessageReplyTo) => void;
+  toggleMessageReaction: (chatId: string, messageId: string, emoji: string) => void;
+  markChatAsRead: (chatId: string) => void;
+  updateGroupChatInfo: (chatId: string, updates: { name?: string; avatar?: string }) => void;
+  addGroupChatMember: (chatId: string, userId: string) => void;
+  removeGroupChatMember: (chatId: string, userId: string) => void;
+  updateGroupMemberRole: (chatId: string, userId: string, role: 'admin' | 'member') => void;
+  leaveGroupChat: (chatId: string) => void;
+
   toggleEventRSVP: (eventId: string, status: 'attending' | 'interested' | 'none') => void;
   addEvent: (eventData: {
     title: string;
@@ -158,6 +186,19 @@ interface AppContextType {
   // Announcement Actions
   addAnnouncement: (groupId: string, title: string, content: string, isPinned?: boolean) => void;
   deleteAnnouncement: (groupId: string, announcementId: string) => void;
+
+  // Portal Global Announcements System
+  announcements: PortalAnnouncement[];
+  unreadAnnouncementsCount: number;
+  previewAnnouncement: PortalAnnouncement | null;
+  setPreviewAnnouncement: (announcement: PortalAnnouncement | null) => void;
+  activeAnnouncementModal: PortalAnnouncement | null;
+  setActiveAnnouncementModal: (announcement: PortalAnnouncement | null) => void;
+  createPortalAnnouncement: (data: Omit<PortalAnnouncement, 'id' | 'confirmations' | 'createdAt' | 'createdByUserId' | 'createdByName' | 'createdByAvatar'>) => void;
+  updatePortalAnnouncement: (id: string, updates: Partial<PortalAnnouncement>) => void;
+  deletePortalAnnouncement: (id: string) => void;
+  confirmAnnouncementRead: (announcementId: string) => void;
+  updateUserPermissions: (userId: string, permissions: string[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -206,15 +247,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   });
 
-  // User Accounts List for Admin
+  // User Accounts List for Admin and Messenger
   const [usersList, setUsersList] = useState<UserProfile[]>(() => {
-    const storedUsers: Record<string, UserAccountData> = JSON.parse(localStorage.getItem('mag_users_db') || '{}');
-    return Object.values(storedUsers).map(u => u.profile);
+    const seeded = seedUsersDatabase();
+    return Object.values(seeded).map(u => u.profile);
+  });
+
+  // Raw Conversations database
+  const [rawConversations, setRawConversations] = useState<ChatConversation[]>(() => {
+    return loadConversationsFromStorage();
   });
 
   // Global app entities
   const [posts, setPosts] = useState<Post[]>(initialPosts);
-  const [chats, setChats] = useState<ChatConversation[]>(initialChats);
   const [events, setEvents] = useState<SocialEvent[]>(initialEvents);
   const [groups, setGroups] = useState<Group[]>(() => {
     const savedGroups = localStorage.getItem('mag_groups_db');
@@ -233,6 +278,174 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [shaderQuality, setShaderQuality] = useState<'high' | 'medium' | 'low'>('high');
 
+  // Portal Global Announcements State
+  const [announcements, setAnnouncements] = useState<PortalAnnouncement[]>(() => {
+    const saved = localStorage.getItem('mag_portal_announcements_v2');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {
+        return initialAnnouncements;
+      }
+    }
+    return initialAnnouncements;
+  });
+
+  const [previewAnnouncement, setPreviewAnnouncement] = useState<PortalAnnouncement | null>(null);
+  const [activeAnnouncementModal, setActiveAnnouncementModal] = useState<PortalAnnouncement | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('mag_portal_announcements_v2', JSON.stringify(announcements));
+  }, [announcements]);
+
+  const unreadAnnouncementsCount = React.useMemo(() => {
+    if (!profile || !profile.id) return 0;
+    return announcements.filter(ann => {
+      if (ann.status !== 'active') return false;
+      if (ann.expiresAt && ann.expiresAt.trim() !== '') {
+        const exp = new Date(ann.expiresAt).getTime();
+        if (!isNaN(exp) && exp < Date.now()) return false;
+      }
+      const confirmed = ann.confirmations?.some(c =>
+        (c.userId === profile.id || c.username === profile.name) && Boolean(c.confirmedAt)
+      );
+      return !confirmed;
+    }).length;
+  }, [announcements, profile]);
+
+  const createPortalAnnouncement = (data: Omit<PortalAnnouncement, 'id' | 'confirmations' | 'createdAt' | 'createdByUserId' | 'createdByName' | 'createdByAvatar'>) => {
+    const newAnn: PortalAnnouncement = {
+      ...data,
+      id: `ann_${Date.now()}`,
+      createdByUserId: profile.id,
+      createdByName: `${profile.name} (${profile.role === 'ADMIN' ? 'Admin' : 'Moderator'})`,
+      createdByAvatar: profile.avatar,
+      createdAt: new Date().toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' }),
+      confirmations: []
+    };
+    setAnnouncements(prev => [newAnn, ...prev]);
+  };
+
+  const updatePortalAnnouncement = (id: string, updates: Partial<PortalAnnouncement>) => {
+    setAnnouncements(prev =>
+      prev.map(ann => (ann.id === id ? { ...ann, ...updates } : ann))
+    );
+  };
+
+  const deletePortalAnnouncement = (id: string) => {
+    setAnnouncements(prev => prev.filter(ann => ann.id !== id));
+  };
+
+  const confirmAnnouncementRead = (announcementId: string) => {
+    if (!profile || !profile.id) return;
+    const now = new Date().toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+
+    setAnnouncements(prev =>
+      prev.map(ann => {
+        if (ann.id !== announcementId) return ann;
+        const existingConf = ann.confirmations?.find(c => c.userId === profile.id || c.username === profile.name);
+        if (existingConf) {
+          return {
+            ...ann,
+            confirmations: ann.confirmations.map(c =>
+              c.userId === profile.id || c.username === profile.name
+                ? { ...c, confirmedAt: now }
+                : c
+            )
+          };
+        } else {
+          return {
+            ...ann,
+            confirmations: [
+              ...(ann.confirmations || []),
+              {
+                userId: profile.id,
+                username: profile.name,
+                userAvatar: profile.avatar,
+                readAt: now,
+                confirmedAt: now
+              }
+            ]
+          };
+        }
+      })
+    );
+  };
+
+  const updateUserPermissions = (userId: string, permissions: string[]) => {
+    setUsersList(prev =>
+      prev.map(u => (u.id === userId ? { ...u, permissions } : u))
+    );
+  };
+
+  // Auto-sync conversations from localStorage across tabs/sessions
+  useEffect(() => {
+    const syncConvs = () => {
+      const convs = loadConversationsFromStorage();
+      setRawConversations(convs);
+    };
+
+    window.addEventListener('storage', syncConvs);
+    const interval = setInterval(syncConvs, 2000);
+    return () => {
+      window.removeEventListener('storage', syncConvs);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Compute active user's formatted chats list
+  const chats: ChatConversation[] = React.useMemo(() => {
+    if (!profile || !profile.id) return [];
+
+    const userConvs = rawConversations.filter(c =>
+      c.members?.some(m => m.userId === profile.id || m.username?.toLowerCase() === profile.name?.toLowerCase())
+    );
+
+    return userConvs.map(conv => {
+      const currentMember = conv.members?.find(m => m.userId === profile.id || m.username?.toLowerCase() === profile.name?.toLowerCase());
+      const lastReadTime = currentMember?.lastReadAt ? new Date(currentMember.lastReadAt).getTime() : 0;
+
+      // Calculate unread count for current user
+      const unreadCount = conv.messages?.filter(msg => {
+        if (msg.senderId === profile.id) return false;
+        const msgTime = new Date(msg.createdAt).getTime();
+        const isRead = msg.readBy?.includes(profile.id);
+        return !isRead && msgTime > lastReadTime;
+      }).length || 0;
+
+      let targetUser = conv.user;
+      if (conv.type === 'direct') {
+        const otherMember = conv.members?.find(m => m.userId !== profile.id && m.username?.toLowerCase() !== profile.name?.toLowerCase());
+        if (otherMember) {
+          const liveProfile = usersList.find(u => u.id === otherMember.userId || u.name.toLowerCase() === otherMember.username.toLowerCase());
+          targetUser = {
+            id: otherMember.userId,
+            name: liveProfile?.name || otherMember.username,
+            avatar: liveProfile?.avatar || otherMember.userAvatar,
+            frame: liveProfile?.avatarFrame || otherMember.userFrame || 'standard',
+            status: liveProfile?.status || 'online',
+            title: liveProfile?.title || 'Członek Portalu MaG',
+            role: liveProfile?.role || 'USER'
+          };
+        }
+      }
+
+      // Format messages with isMe flag
+      const formattedMessages = (conv.messages || []).map(msg => ({
+        ...msg,
+        isMe: msg.senderId === profile.id || msg.senderName.toLowerCase() === profile.name.toLowerCase()
+      }));
+
+      return {
+        ...conv,
+        unreadCount,
+        user: targetUser,
+        messages: formattedMessages
+      };
+    }).sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+  }, [rawConversations, profile, usersList]);
+
   // Load user specific data from localStorage if available
   useEffect(() => {
     const savedUser = localStorage.getItem('mag_session_user');
@@ -243,7 +456,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsed = JSON.parse(savedDataRaw);
           if (parsed.posts) setPosts(parsed.posts);
-          if (parsed.chats) setChats(parsed.chats);
           if (parsed.events) setEvents(parsed.events);
           if (parsed.games) setGames(parsed.games);
           if (parsed.reels) setReels(parsed.reels);
@@ -260,9 +472,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const savedUser = localStorage.getItem('mag_session_user');
     if (savedUser && isAuthenticated) {
       const userKey = `mag_data_${savedUser.toLowerCase()}`;
-      localStorage.setItem(userKey, JSON.stringify({ posts, chats, events, games, reels, notifications }));
+      localStorage.setItem(userKey, JSON.stringify({ posts, events, games, reels, notifications }));
     }
-  }, [posts, chats, events, games, reels, notifications, isAuthenticated]);
+  }, [posts, events, games, reels, notifications, isAuthenticated]);
 
   // Persist Groups database across sessions
   useEffect(() => {
@@ -404,7 +616,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsAuthenticated(true);
       setAnimationState('logged_in');
       setActiveView('home');
-    }, 2100);
+    }, 1750);
 
     return { success: true };
   };
@@ -517,30 +729,407 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addXp(15);
   };
 
-  const sendMessage = (chatId: string, text: string) => {
-    if (!text.trim()) return;
-    const timeNow = 'Przed chwilą';
-    setChats(chats.map(chat => {
-      if (chat.id === chatId) {
-        const newMsg = {
-          id: `msg_${Date.now()}`,
-          senderId: profile.id,
-          senderName: profile.name,
-          senderAvatar: profile.avatar,
-          text,
-          timeAgo: timeNow,
-          isMe: true
-        };
-        return {
-          ...chat,
-          lastMessage: text,
-          lastMessageTime: timeNow,
-          messages: [...chat.messages, newMsg]
-        };
-      }
-      return chat;
-    }));
+  const sendChatMessage = (
+    chatId: string,
+    content: string,
+    type: ChatMessageType = 'text',
+    mediaUrl?: string,
+    replyTo?: ChatMessageReplyTo
+  ) => {
+    if (!content.trim() && !mediaUrl) return;
+
+    const currentUserId = profile.id;
+    const nowIso = new Date().toISOString();
+    const msgId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+
+    const newMsg: ChatMessage = {
+      id: msgId,
+      conversationId: chatId,
+      senderId: currentUserId,
+      senderName: profile.name,
+      senderAvatar: profile.avatar,
+      senderFrame: profile.avatarFrame,
+      content: content.trim(),
+      type,
+      mediaUrl,
+      replyTo,
+      reactions: {},
+      createdAt: nowIso,
+      timeAgo: 'Przed chwilą',
+      status: 'sent',
+      readBy: [currentUserId]
+    };
+
+    const allConvs = loadConversationsFromStorage();
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId) return conv;
+
+      const updatedMembers = (conv.members || []).map(m =>
+        m.userId === currentUserId || m.username?.toLowerCase() === profile.name.toLowerCase()
+          ? { ...m, lastReadAt: nowIso }
+          : m
+      );
+
+      return {
+        ...conv,
+        updatedAt: nowIso,
+        members: updatedMembers,
+        messages: [...(conv.messages || []), newMsg],
+        lastMessage: content.trim() || (type === 'image' ? '📷 Zdjęcie' : '👾 GIF'),
+        lastMessageTime: 'Przed chwilą',
+        lastMessageSenderId: currentUserId,
+        lastMessageStatus: 'sent' as const
+      };
+    });
+
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
     addXp(10);
+  };
+
+  const sendMessage = (chatId: string, text: string) => {
+    sendChatMessage(chatId, text, 'text');
+  };
+
+  const getOrCreateDirectChat = (targetUser: UserProfile | { id: string; name: string; avatar: string; avatarFrame?: AvatarFrameStyle; role?: UserRole; title?: string }): string => {
+    const currentUserId = profile.id;
+    const currentUserName = profile.name;
+    const targetId = targetUser.id || `usr_${targetUser.name.toLowerCase()}`;
+
+    const allConvs = loadConversationsFromStorage();
+
+    // Check if direct conversation already exists between currentUserId and targetId
+    const existingConv = allConvs.find(c => {
+      if (c.type !== 'direct') return false;
+      const memberIds = c.members?.map(m => m.userId) || [];
+      const memberNames = c.members?.map(m => m.username?.toLowerCase()) || [];
+      return (memberIds.includes(currentUserId) || memberNames.includes(currentUserName.toLowerCase())) &&
+             (memberIds.includes(targetId) || memberNames.includes(targetUser.name.toLowerCase()));
+    });
+
+    if (existingConv) {
+      setSelectedChatId(existingConv.id);
+      return existingConv.id;
+    }
+
+    // Create new direct conversation
+    const newId = `conv_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const nowIso = new Date().toISOString();
+
+    const newConv: ChatConversation = {
+      id: newId,
+      type: 'direct',
+      createdBy: currentUserId,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      members: [
+        {
+          userId: currentUserId,
+          username: currentUserName,
+          userAvatar: profile.avatar,
+          userFrame: profile.avatarFrame || 'standard',
+          role: 'admin',
+          joinedAt: nowIso,
+          lastReadAt: nowIso
+        },
+        {
+          userId: targetId,
+          username: targetUser.name,
+          userAvatar: targetUser.avatar,
+          userFrame: targetUser.avatarFrame || 'standard',
+          role: 'admin',
+          joinedAt: nowIso,
+          lastReadAt: nowIso
+        }
+      ],
+      messages: [],
+      lastMessage: 'Rozpoczęto konwersację.',
+      lastMessageTime: 'Przed chwilą',
+      lastMessageSenderId: currentUserId,
+      lastMessageStatus: 'sent'
+    };
+
+    const updatedConvs = [newConv, ...allConvs];
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+    setSelectedChatId(newId);
+    return newId;
+  };
+
+  const createGroupChat = (groupName: string, selectedUserIds: string[], avatarUrl?: string): string => {
+    const currentUserId = profile.id;
+    const nowIso = new Date().toISOString();
+    const newId = `grp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    const selectedProfiles = usersList.filter(u => selectedUserIds.includes(u.id));
+
+    const members: ChatMember[] = [
+      {
+        userId: currentUserId,
+        username: profile.name,
+        userAvatar: profile.avatar,
+        userFrame: profile.avatarFrame || 'standard',
+        role: 'admin',
+        joinedAt: nowIso,
+        lastReadAt: nowIso
+      },
+      ...selectedProfiles.map(u => ({
+        userId: u.id,
+        username: u.name,
+        userAvatar: u.avatar,
+        userFrame: u.avatarFrame || 'standard',
+        role: 'member' as const,
+        joinedAt: nowIso,
+        lastReadAt: nowIso
+      }))
+    ];
+
+    const initialMsg: ChatMessage = {
+      id: `msg_${Date.now()}`,
+      conversationId: newId,
+      senderId: currentUserId,
+      senderName: profile.name,
+      senderAvatar: profile.avatar,
+      senderFrame: profile.avatarFrame,
+      content: `Utworzono czat grupowy "${groupName.trim()}".`,
+      type: 'text',
+      createdAt: nowIso,
+      timeAgo: 'Przed chwilą',
+      status: 'read',
+      readBy: [currentUserId]
+    };
+
+    const newGroupConv: ChatConversation = {
+      id: newId,
+      type: 'group',
+      name: groupName.trim(),
+      avatar: avatarUrl || 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300',
+      createdBy: currentUserId,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      members,
+      messages: [initialMsg],
+      lastMessage: initialMsg.content,
+      lastMessageTime: 'Przed chwilą',
+      lastMessageSenderId: currentUserId,
+      lastMessageStatus: 'read'
+    };
+
+    const allConvs = loadConversationsFromStorage();
+    const updatedConvs = [newGroupConv, ...allConvs];
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+    setSelectedChatId(newId);
+    addXp(20);
+    return newId;
+  };
+
+  const toggleMessageReaction = (chatId: string, messageId: string, emoji: string) => {
+    const currentUserId = profile.id;
+    const allConvs = loadConversationsFromStorage();
+
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId) return conv;
+
+      const updatedMessages = conv.messages.map(msg => {
+        if (msg.id !== messageId) return msg;
+
+        const currentReactions = msg.reactions || {};
+        const existingUsers = currentReactions[emoji] || [];
+        const hasReacted = existingUsers.includes(currentUserId);
+
+        let newUsers: string[];
+        if (hasReacted) {
+          newUsers = existingUsers.filter(id => id !== currentUserId);
+        } else {
+          newUsers = [...existingUsers, currentUserId];
+        }
+
+        const newReactions = { ...currentReactions };
+        if (newUsers.length > 0) {
+          newReactions[emoji] = newUsers;
+        } else {
+          delete newReactions[emoji];
+        }
+
+        return {
+          ...msg,
+          reactions: newReactions
+        };
+      });
+
+      return {
+        ...conv,
+        messages: updatedMessages
+      };
+    });
+
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+  };
+
+  const markChatAsRead = (chatId: string) => {
+    const currentUserId = profile.id;
+    const nowIso = new Date().toISOString();
+
+    const allConvs = loadConversationsFromStorage();
+    let changed = false;
+
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId) return conv;
+
+      const member = conv.members?.find(m => m.userId === currentUserId || m.username?.toLowerCase() === profile.name.toLowerCase());
+      if (!member) return conv;
+
+      changed = true;
+      const updatedMembers = conv.members.map(m =>
+        m.userId === currentUserId || m.username?.toLowerCase() === profile.name.toLowerCase()
+          ? { ...m, lastReadAt: nowIso }
+          : m
+      );
+
+      const updatedMessages = conv.messages.map(msg => {
+        const readBy = msg.readBy || [msg.senderId];
+        if (!readBy.includes(currentUserId)) {
+          return {
+            ...msg,
+            readBy: [...readBy, currentUserId],
+            status: 'read' as const
+          };
+        }
+        return msg;
+      });
+
+      return {
+        ...conv,
+        members: updatedMembers,
+        messages: updatedMessages
+      };
+    });
+
+    if (changed) {
+      saveConversationsToStorage(updatedConvs);
+      setRawConversations(updatedConvs);
+    }
+  };
+
+  const updateGroupChatInfo = (chatId: string, updates: { name?: string; avatar?: string }) => {
+    const allConvs = loadConversationsFromStorage();
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId || conv.type !== 'group') return conv;
+      return {
+        ...conv,
+        name: updates.name ? updates.name.trim() : conv.name,
+        avatar: updates.avatar ? updates.avatar.trim() : conv.avatar,
+        updatedAt: new Date().toISOString()
+      };
+    });
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+  };
+
+  const addGroupChatMember = (chatId: string, userId: string) => {
+    const user = usersList.find(u => u.id === userId);
+    if (!user) return;
+
+    const nowIso = new Date().toISOString();
+    const allConvs = loadConversationsFromStorage();
+
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId || conv.type !== 'group') return conv;
+      if (conv.members.some(m => m.userId === userId)) return conv;
+
+      const newMember: ChatMember = {
+        userId: user.id,
+        username: user.name,
+        userAvatar: user.avatar,
+        userFrame: user.avatarFrame || 'standard',
+        role: 'member',
+        joinedAt: nowIso,
+        lastReadAt: nowIso
+      };
+
+      const systemMsg: ChatMessage = {
+        id: `msg_sys_${Date.now()}`,
+        conversationId: chatId,
+        senderId: profile.id,
+        senderName: profile.name,
+        senderAvatar: profile.avatar,
+        content: `Użytkownik ${user.name} dołączył(a) do grupy.`,
+        type: 'text',
+        createdAt: nowIso,
+        timeAgo: 'Przed chwilą',
+        status: 'read',
+        readBy: [profile.id]
+      };
+
+      return {
+        ...conv,
+        members: [...conv.members, newMember],
+        messages: [...conv.messages, systemMsg],
+        updatedAt: nowIso
+      };
+    });
+
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+  };
+
+  const removeGroupChatMember = (chatId: string, userId: string) => {
+    const allConvs = loadConversationsFromStorage();
+    const nowIso = new Date().toISOString();
+
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId || conv.type !== 'group') return conv;
+
+      const targetMember = conv.members.find(m => m.userId === userId);
+      if (!targetMember) return conv;
+
+      const systemMsg: ChatMessage = {
+        id: `msg_sys_${Date.now()}`,
+        conversationId: chatId,
+        senderId: profile.id,
+        senderName: profile.name,
+        senderAvatar: profile.avatar,
+        content: `Użytkownik ${targetMember.username} został(a) usunięty(a) z grupy.`,
+        type: 'text',
+        createdAt: nowIso,
+        timeAgo: 'Przed chwilą',
+        status: 'read',
+        readBy: [profile.id]
+      };
+
+      return {
+        ...conv,
+        members: conv.members.filter(m => m.userId !== userId),
+        messages: [...conv.messages, systemMsg],
+        updatedAt: nowIso
+      };
+    });
+
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+  };
+
+  const updateGroupMemberRole = (chatId: string, userId: string, role: 'admin' | 'member') => {
+    const allConvs = loadConversationsFromStorage();
+    const updatedConvs = allConvs.map(conv => {
+      if (conv.id !== chatId || conv.type !== 'group') return conv;
+
+      return {
+        ...conv,
+        members: conv.members.map(m => m.userId === userId ? { ...m, role } : m),
+        updatedAt: new Date().toISOString()
+      };
+    });
+
+    saveConversationsToStorage(updatedConvs);
+    setRawConversations(updatedConvs);
+  };
+
+  const leaveGroupChat = (chatId: string) => {
+    removeGroupChatMember(chatId, profile.id);
+    setSelectedChatId(null);
   };
 
   const toggleEventRSVP = (eventId: string, status: 'attending' | 'interested' | 'none') => {
@@ -1371,6 +1960,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         likePost,
         addPostComment,
         sendMessage,
+        getOrCreateDirectChat,
+        createGroupChat,
+        sendChatMessage,
+        toggleMessageReaction,
+        markChatAsRead,
+        updateGroupChatInfo,
+        addGroupChatMember,
+        removeGroupChatMember,
+        updateGroupMemberRole,
+        leaveGroupChat,
         toggleEventRSVP,
         addEvent,
         updateEvent,
@@ -1406,7 +2005,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addWallPostComment,
         likeWallPost,
         addAnnouncement,
-        deleteAnnouncement
+        deleteAnnouncement,
+        announcements,
+        unreadAnnouncementsCount,
+        previewAnnouncement,
+        setPreviewAnnouncement,
+        activeAnnouncementModal,
+        setActiveAnnouncementModal,
+        createPortalAnnouncement,
+        updatePortalAnnouncement,
+        deletePortalAnnouncement,
+        confirmAnnouncementRead,
+        updateUserPermissions
       }}
     >
       {children}

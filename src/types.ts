@@ -1,8 +1,22 @@
-export type AppView = 'home' | 'sciana' | 'czaty' | 'reels' | 'grupy' | 'gry' | 'wydarzenia' | 'profil' | 'admin';
+export type AppView = 'home' | 'sciana' | 'czaty' | 'reels' | 'grupy' | 'gry' | 'wydarzenia' | 'profil' | 'admin' | 'miasto';
 
-export type UserRole = 'USER' | 'MODERATOR' | 'ADMIN';
+export type UserRole = 'USER' | 'MODERATOR' | 'R4 MaG' | 'ADMIN';
 export type UserAccountStatus = 'active' | 'blocked';
-export type AvatarFrameStyle = 'standard' | 'ice' | 'gold' | 'emerald' | 'crimson' | 'mag';
+export type AvatarFrameStyle = 'standard' | 'ice' | 'gold' | 'emerald' | 'crimson' | 'mag' | 'admin_frame' | 'r4_frame' | 'moderator_frame';
+
+export interface CityStats {
+  likesGiven: number;
+  commentsWritten: number;
+  likesReceived: number;
+}
+
+export interface UserCityData {
+  level: number;
+  stats: CityStats;
+  lastUpgradedAt?: string;
+  cityName?: string;
+  buildingLevels?: Record<string, number>;
+}
 
 export interface UserProfile {
   id: string;
@@ -29,12 +43,14 @@ export interface UserProfile {
     facebook?: string;
   };
   badges: Array<{ id: string; name: string; icon: string; color: string }>;
+  permissions?: string[];
   stats: {
     postsCount: number;
     friendsCount: number;
     eventsAttended: number;
     gamesPlayed: number;
   };
+  cityData?: UserCityData;
 }
 
 export interface PostComment {
@@ -62,28 +78,67 @@ export interface Post {
   badge?: string;
 }
 
+export type ChatMessageType = 'text' | 'image' | 'gif';
+
+export interface ChatMessageReplyTo {
+  id: string;
+  senderName: string;
+  content: string;
+}
+
 export interface ChatMessage {
   id: string;
+  conversationId: string;
   senderId: string;
   senderName: string;
   senderAvatar: string;
-  text: string;
-  timeAgo: string;
+  senderFrame?: AvatarFrameStyle;
+  content: string;
+  type?: ChatMessageType;
+  mediaUrl?: string;
+  replyTo?: ChatMessageReplyTo;
+  reactions?: Record<string, string[]>; // emoji -> userIds
+  createdAt: string;
+  timeAgo?: string;
+  status?: 'sent' | 'delivered' | 'read';
+  readBy?: string[];
   isMe?: boolean;
+}
+
+export interface ChatMember {
+  userId: string;
+  username: string;
+  userAvatar: string;
+  userFrame?: AvatarFrameStyle;
+  role: 'admin' | 'member';
+  joinedAt: string;
+  lastReadAt: string;
 }
 
 export interface ChatConversation {
   id: string;
-  user: {
+  type: 'direct' | 'group';
+  name?: string;
+  avatar?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  members: ChatMember[];
+  messages: ChatMessage[];
+  lastMessage?: string;
+  lastMessageTime?: string;
+  lastMessageSenderId?: string;
+  lastMessageStatus?: 'sent' | 'delivered' | 'read';
+  unreadCount?: number;
+  user?: {
     id: string;
     name: string;
     avatar: string;
-    status: 'online' | 'offline' | 'away';
+    frame?: AvatarFrameStyle;
+    status: 'online' | 'offline' | 'ingame';
+    title?: string;
+    role?: UserRole;
   };
-  unreadCount: number;
-  lastMessage: string;
-  lastMessageTime: string;
-  messages: ChatMessage[];
 }
 
 export interface ReelComment {
@@ -302,3 +357,59 @@ export interface UserAccountData {
   profile: UserProfile;
   createdAt: string;
 }
+
+// ================= ANNOUNCEMENTS SYSTEM MODELS =================
+export type AnnouncementCategory =
+  | 'WAŻNE'
+  | 'TURNIEJ'
+  | 'WYDARZENIE'
+  | 'GRY'
+  | 'SOJUSZ'
+  | 'AKTUALIZACJA'
+  | 'OSTRZEŻENIE'
+  | 'INFORMACJA';
+
+export type AnnouncementRequirement = 'ZWYKŁE' | 'WYMAGA_POTWIERDZENIA';
+
+export interface AnnouncementConfirmation {
+  userId: string;
+  username: string;
+  userAvatar: string;
+  readAt: string;
+  confirmedAt?: string;
+}
+
+export interface PortalAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  category: AnnouncementCategory;
+  requirement: AnnouncementRequirement;
+  
+  // Optional fields
+  eventDate?: string; // e.g. "2026-07-28"
+  eventTime?: string; // e.g. "20:00"
+  linkUrl?: string; // External link
+  imageUrl?: string; // Graphic header
+  portalTargetView?: AppView; // AppView target when clicking CTA
+  portalTargetId?: string; // Target entity ID
+  ctaLabel?: string; // Custom button text e.g. "ZOBACZ TURNIEJ"
+  
+  // Scheduling & Validity
+  publishType: 'now' | 'scheduled';
+  scheduledPublishAt?: string; // ISO string or time string
+  expiresAt?: string; // ISO date or empty
+  
+  // Author & Metadata
+  createdByUserId: string;
+  createdByName: string;
+  createdByAvatar: string;
+  createdAt: string;
+  
+  // Status
+  status: 'active' | 'scheduled' | 'completed';
+  
+  // Confirmations list
+  confirmations: AnnouncementConfirmation[];
+}
+

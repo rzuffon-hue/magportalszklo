@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Settings, Sparkles, Volume2, VolumeX, RotateCcw, LogOut, ShieldAlert } from 'lucide-react';
+import { Bell, Settings, Sparkles, Volume2, VolumeX, RotateCcw, LogOut, ShieldAlert, Megaphone, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const Header: React.FC = () => {
@@ -10,6 +10,9 @@ export const Header: React.FC = () => {
     unreadNotificationsCount,
     notifications,
     markNotificationsRead,
+    announcements,
+    unreadAnnouncementsCount,
+    setActiveAnnouncementModal,
     soundEnabled,
     setSoundEnabled,
     shaderQuality,
@@ -20,6 +23,9 @@ export const Header: React.FC = () => {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [notifTab, setNotifTab] = useState<'announcements' | 'system'>('announcements');
+
+  const totalUnreadCount = unreadNotificationsCount + unreadAnnouncementsCount;
 
   const toggleNotifs = () => {
     setShowNotifications(!showNotifications);
@@ -32,8 +38,22 @@ export const Header: React.FC = () => {
     setShowNotifications(false);
   };
 
+  const closeAllDrawers = () => {
+    setShowNotifications(false);
+    setShowSettings(false);
+  };
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 px-4 sm:px-8 flex items-center justify-between bg-gradient-to-b from-black/90 via-slate-950/70 to-transparent backdrop-blur-md border-b border-slate-800/40">
+    <>
+      {/* Click Outside Transparent Backdrop */}
+      {(showNotifications || showSettings) && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent cursor-default"
+          onClick={closeAllDrawers}
+        />
+      )}
+
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 px-4 sm:px-8 flex items-center justify-between bg-gradient-to-b from-black/90 via-slate-950/70 to-transparent backdrop-blur-md border-b border-slate-800/40">
       
       {/* Left: MaG Carved Brand Logo */}
       <div
@@ -110,48 +130,138 @@ export const Header: React.FC = () => {
           <div className="relative">
             <button
               onClick={toggleNotifs}
-              className={`p-2 rounded-full border transition-all relative ${
+              className={`p-2 rounded-full border transition-all relative cursor-pointer ${
                 showNotifications
                   ? 'bg-purple-950 border-purple-500 text-purple-200'
                   : 'bg-slate-900/80 border-slate-700/60 text-slate-300 hover:text-white hover:border-slate-500'
               }`}
             >
               <Bell className="w-4 h-4" />
-              {unreadNotificationsCount > 0 && (
-                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-black animate-pulse" />
+              {totalUnreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full ring-2 ring-black flex items-center justify-center animate-pulse">
+                  {totalUnreadCount}
+                </span>
               )}
             </button>
 
             {/* Notifications Dropdown Drawer */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950/95 border border-purple-500/30 p-4 shadow-[0_10px_40px_rgba(0,0,0,0.9)] backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2 font-serif">
-                    <Bell className="w-4 h-4 text-purple-400" /> Powiadomienia
-                  </h3>
-                  <span className="text-xs text-purple-300 font-semibold">{notifications.length} ogółem</span>
+              <div className="fixed top-14 right-3 left-3 sm:left-auto sm:right-4 sm:w-96 max-w-[calc(100vw-24px)] rounded-2xl bg-slate-950/95 border border-purple-500/30 p-3.5 sm:p-4 shadow-[0_10px_40px_rgba(0,0,0,0.9)] backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                
+                {/* Header & Tabs */}
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setNotifTab('announcements')}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        notifTab === 'announcements'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Megaphone className="w-3.5 h-3.5" />
+                      <span>Ogłoszenia</span>
+                      {unreadAnnouncementsCount > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black">
+                          {unreadAnnouncementsCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setNotifTab('system')}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                        notifTab === 'system'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Bell className="w-3.5 h-3.5" />
+                      <span>Powiadomienia</span>
+                      {unreadNotificationsCount > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-purple-600 text-white text-[9px] font-black">
+                          {unreadNotificationsCount}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-2 mt-3 max-h-72 overflow-y-auto pr-1">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-slate-400 font-medium">
-                      Brak nowych powiadomień
-                    </div>
-                  ) : (
-                    notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-purple-500/40 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-purple-200">{n.title}</span>
-                          <span className="text-[10px] text-slate-400">{n.timeAgo}</span>
-                        </div>
-                        <p className="text-xs text-slate-300 mt-1">{n.message}</p>
+                {/* Tab 1: Announcements List */}
+                {notifTab === 'announcements' && (
+                  <div className="space-y-2 mt-3 max-h-[60vh] sm:max-h-72 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
+                    {announcements.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                        Brak opublikowanych ogłoszeń
                       </div>
-                    ))
-                  )}
-                </div>
+                    ) : (
+                      announcements.map((ann) => {
+                        const isRead = ann.confirmations?.some(c =>
+                          (c.userId === profile.id || c.username === profile.name) && Boolean(c.confirmedAt)
+                        );
+                        return (
+                          <div
+                            key={ann.id}
+                            onClick={() => {
+                              setActiveAnnouncementModal(ann);
+                              setShowNotifications(false);
+                            }}
+                            className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-2 min-w-0 ${
+                              !isRead
+                                ? 'bg-purple-950/40 border-purple-500/50 hover:bg-purple-900/50 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                                : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 opacity-80'
+                            }`}
+                          >
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 uppercase">
+                                  {ann.category}
+                                </span>
+                                {!isRead && (
+                                  <span className="text-[9px] font-bold text-rose-400 bg-rose-500/10 px-1 rounded border border-rose-500/30">
+                                    NIEPRZECZYTANE
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-xs font-bold text-slate-100 truncate">{ann.title}</h4>
+                              <p className="text-[11px] text-slate-400 line-clamp-2 break-words">{ann.content}</p>
+                            </div>
+
+                            {isRead ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-1" title="Przeczytano" />
+                            ) : (
+                              <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-2 animate-ping" />
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 2: System Notifications List */}
+                {notifTab === 'system' && (
+                  <div className="space-y-2 mt-3 max-h-[60vh] sm:max-h-72 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-400 font-medium">
+                        Brak powiadomień
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-purple-500/40 transition-colors min-w-0"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-purple-200 truncate">{n.title}</span>
+                            <span className="text-[10px] text-slate-400 shrink-0">{n.timeAgo}</span>
+                          </div>
+                          <p className="text-xs text-slate-300 mt-1 break-words">{n.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -171,7 +281,7 @@ export const Header: React.FC = () => {
 
             {/* Settings Dropdown Drawer */}
             {showSettings && (
-              <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-950/95 border border-sky-500/30 p-4 shadow-[0_10px_40px_rgba(0,0,0,0.9)] backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
+              <div className="fixed top-14 right-3 sm:right-4 sm:w-72 max-w-[calc(100vw-24px)] rounded-2xl bg-slate-950/95 border border-sky-500/30 p-4 shadow-[0_10px_40px_rgba(0,0,0,0.9)] backdrop-blur-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4 overflow-hidden">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2 font-serif">
                     <Settings className="w-4 h-4 text-sky-400" /> Ustawienia Portalu
@@ -262,5 +372,5 @@ export const Header: React.FC = () => {
         </div>
       )}
     </header>
-  );
+  </>);
 };

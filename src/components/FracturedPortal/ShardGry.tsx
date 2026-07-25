@@ -47,8 +47,8 @@ export const ShardGry: React.FC<ShardProps> = ({
         style={{
           background: 'radial-gradient(circle at 75% 70%, rgba(6, 182, 212, 0.22) 0%, rgba(15, 12, 28, 0.25) 70%, rgba(3, 5, 12, 0.35) 100%)',
           opacity: isShattered ? 1 : isShattering ? 1 : 0,
-          transitionDuration: isShattering ? '600ms' : '300ms',
-          transitionDelay: isShattering ? '1200ms' : '0ms'
+          transitionDuration: isShattering ? '500ms' : '300ms',
+          transitionDelay: isShattering ? '1100ms' : '0ms'
         }}
       />
 
@@ -57,8 +57,8 @@ export const ShardGry: React.FC<ShardProps> = ({
         className="absolute inset-0 bg-gradient-to-t from-cyan-950/15 via-slate-950/25 to-black/40 pointer-events-none transition-opacity"
         style={{
           opacity: isShattered ? 1 : isShattering ? 1 : 0,
-          transitionDuration: isShattering ? '600ms' : '300ms',
-          transitionDelay: isShattering ? '1200ms' : '0ms'
+          transitionDuration: isShattering ? '500ms' : '300ms',
+          transitionDelay: isShattering ? '1100ms' : '0ms'
         }}
       />
 
@@ -68,10 +68,10 @@ export const ShardGry: React.FC<ShardProps> = ({
         style={{
           opacity: isShattered ? 1 : isShattering ? 1 : 0,
           transitionDuration: isShattering ? '500ms' : '300ms',
-          transitionDelay: isShattering ? '1200ms' : '0ms'
+          transitionDelay: isShattering ? '900ms' : '0ms'
         }}
       >
-        <GlassRimHighlight clipPath={activePolygon} themeColor="rgba(6, 182, 212, 0.5)" />
+        <GlassRimHighlight clipPath={activePolygon} themeColor="rgba(6, 182, 212, 0.4)" />
       </div>
 
       {/* 4. Instant Touch Material Light Flash Wave (150-250ms) */}
@@ -92,9 +92,9 @@ export const ShardGry: React.FC<ShardProps> = ({
         style={{
           ...(contentStyle || { height: '100%', width: '100%' }),
           opacity: isShattered ? 1 : isShattering ? 1 : 0,
-          transform: isShattered ? 'translateY(0px)' : isShattering ? 'translateY(0px)' : 'translateY(6px)',
-          transitionDuration: isShattering ? '350ms' : '200ms',
-          transitionDelay: isShattering ? `${staggerDelayMs}ms` : '0ms'
+          transform: isShattered ? 'scale(1) translateY(0px)' : isShattering ? 'scale(1) translateY(0px)' : 'scale(0.96) translateY(4px)',
+          transitionDuration: isShattering ? '450ms' : '200ms',
+          transitionDelay: isShattering ? '1300ms' : '0ms'
         }}
       >
         <EtchedGlassIcon

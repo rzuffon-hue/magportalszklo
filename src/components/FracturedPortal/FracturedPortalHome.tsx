@@ -127,6 +127,15 @@ export const FracturedPortalHome: React.FC = () => {
             </div>
           ))}
 
+          {/* MASTER GEOMETRY CRACK OVERLAY FOR DESKTOP (ALIGNED 1:1 WITH DESKTOP STAGE) */}
+          {(isShattering || isShattered) && (
+            <ShatterAnimationOverlay
+              isShattered={isShattered}
+              isShattering={isShattering}
+              hoveredShard={hoveredShard}
+            />
+          )}
+
           {/* CONTINUOUS UNIFIED DIAGONAL LIGHT SWEEP PASS ACROSS ENTIRE GLASS SHEET */}
           <div className="absolute inset-0 pointer-events-none z-35 overflow-hidden mix-blend-screen opacity-50">
             <div
@@ -159,6 +168,15 @@ export const FracturedPortalHome: React.FC = () => {
             </div>
           ))}
 
+          {/* MASTER GEOMETRY CRACK OVERLAY FOR MOBILE (ALIGNED 1:1 WITH MOBILE STAGE) */}
+          {(isShattering || isShattered) && (
+            <ShatterAnimationOverlay
+              isShattered={isShattered}
+              isShattering={isShattering}
+              hoveredShard={hoveredShard}
+            />
+          )}
+
           {/* CONTINUOUS UNIFIED DIAGONAL LIGHT SWEEP PASS ACROSS ENTIRE GLASS SHEET */}
           <div className="absolute inset-0 pointer-events-none z-35 overflow-hidden mix-blend-screen opacity-50">
             <div
@@ -171,13 +189,10 @@ export const FracturedPortalHome: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. MASTER GEOMETRY CRACK ANIMATION OVERLAY (ON LOGIN TRANSITION ONLY) */}
-      {isShattering && <ShatterAnimationOverlay />}
-
       {/* 6. PRE-LOGIN MINIMALIST ETCHED FORM ON UNBROKEN GLASS PANE (ABSOLUTE OVERLAY, UNMOUNTS WHEN SHATTERED) */}
       {!isShattered && (
         <div
-          className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`absolute inset-0 z-40 flex flex-col items-center justify-center p-6 transition-all duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isShattering ? 'opacity-0 translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'
           }`}
         >

@@ -10,6 +10,8 @@ import { GryView } from './components/Views/GryView';
 import { WydarzeniaView } from './components/Views/WydarzeniaView';
 import { ProfilView } from './components/Views/ProfilView';
 import { AdminPanelView } from './components/Views/AdminPanelView';
+import { MiniWhiteoutView } from './components/Views/MiniWhiteoutView';
+import { AnnouncementsOverlay } from './components/FracturedPortal/AnnouncementsOverlay';
 
 const MainContent: React.FC = () => {
   const { activeView, isAuthenticated } = useApp();
@@ -31,9 +33,13 @@ const MainContent: React.FC = () => {
             {activeView === 'wydarzenia' && <WydarzeniaView />}
             {activeView === 'profil' && <ProfilView />}
             {activeView === 'admin' && <AdminPanelView />}
+            {activeView === 'miasto' && <MiniWhiteoutView />}
           </div>
         )}
       </main>
+
+      {/* Global Announcements Overlay Layer */}
+      <AnnouncementsOverlay />
     </div>
   );
 };

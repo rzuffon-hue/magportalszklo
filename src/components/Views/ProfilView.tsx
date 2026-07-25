@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { AvatarWithFrame } from '../AvatarWithFrame';
+import { CITY_LEVELS } from '../MiniWhiteout/MiniWhiteoutCity';
 import {
   Crown,
   Award,
@@ -21,9 +22,13 @@ import {
   Plus,
   Send,
   Heart,
-  MessageSquare
+  MessageSquare,
+  Trophy,
+  Dices,
+  Building2,
+  Lock
 } from 'lucide-react';
-import { AvatarFrameStyle } from '../../types';
+import { AvatarFrameStyle, UserRole } from '../../types';
 
 export const ProfilView: React.FC = () => {
   const {
@@ -34,7 +39,8 @@ export const ProfilView: React.FC = () => {
     posts,
     addPost,
     likePost,
-    reels
+    reels,
+    usersList
   } = useApp();
 
   // Active Profile Tab: POSTY | MEDIA | OSIĄGNIĘCIA
@@ -42,6 +48,36 @@ export const ProfilView: React.FC = () => {
 
   // New Post State inside POSTY tab
   const [newPostContent, setNewPostContent] = useState('');
+
+  // Dice Poker Stats State
+  const [pokerStats, setPokerStats] = useState({
+    elo: 1000,
+    wins: 0,
+    losses: 0,
+    played: 0,
+    tournamentsPlayed: 0,
+    tournamentWins: 0,
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`mag_dice_poker_stats_${profile.id}`);
+    if (saved) {
+      try {
+        setPokerStats(JSON.parse(saved));
+      } catch {
+        // fallback
+      }
+    }
+  }, [profile.id]);
+
+  // Compute Ranking Position
+  const sortedUsers = usersList.map((u) => {
+    const saved = localStorage.getItem(`mag_dice_poker_stats_${u.id}`);
+    const elo = saved ? JSON.parse(saved).elo || 1000 : 1000;
+    return { id: u.id, elo };
+  }).sort((a, b) => b.elo - a.elo);
+
+  const pokerRank = sortedUsers.findIndex((u) => u.id === profile.id) + 1;
 
   // Edit Profile Modal State
   const [showEditModal, setShowEditModal] = useState(false);
@@ -63,11 +99,18 @@ export const ProfilView: React.FC = () => {
   const myReels = reels.filter(r => r.authorName === profile.name);
   const xpPercent = Math.round((profile.xp / profile.maxXp) * 100);
 
+  const canEquipFrame = (fId: AvatarFrameStyle): boolean => {
+    if (fId === 'admin_frame') return profile.role === 'ADMIN';
+    if (fId === 'r4_frame') return profile.role === 'R4 MaG' || profile.role === 'ADMIN';
+    if (fId === 'moderator_frame') return profile.role === 'MODERATOR' || profile.role === 'ADMIN';
+    return true; // Cosmetic frames accessible to all
+  };
+
   const handleOpenEditModal = () => {
     setEditName(profile.name);
     setEditAvatar(profile.avatar);
     setEditCover(profile.coverImage || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200');
-    setEditFrame(profile.avatarFrame || 'standard');
+    setEditFrame(canEquipFrame(profile.avatarFrame || 'standard') ? profile.avatarFrame || 'standard' : 'standard');
     setEditBio(profile.bio);
     setEditAlliance(profile.alliance || 'Sojusz MaG');
     setEditWosNick(profile.wosNick || '');
@@ -103,12 +146,14 @@ export const ProfilView: React.FC = () => {
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    const validatedFrame = canEquipFrame(editFrame) ? editFrame : 'standard';
+
     setProfile(prev => ({
       ...prev,
       name: editName.trim() || prev.name,
       avatar: editAvatar,
       coverImage: editCover,
-      avatarFrame: editFrame,
+      avatarFrame: validatedFrame,
       bio: editBio,
       alliance: editAlliance,
       wosNick: editWosNick,
@@ -130,13 +175,22 @@ export const ProfilView: React.FC = () => {
     setNewPostContent('');
   };
 
-  const frameOptions: Array<{ id: AvatarFrameStyle; name: string; color: string; desc: string }> = [
+  const frameOptions: Array<{
+    id: AvatarFrameStyle;
+    name: string;
+    color: string;
+    desc: string;
+    requiredRoleDesc?: string;
+  }> = [
     { id: 'standard', name: 'Standard', color: 'border-slate-600', desc: 'Minimalistyczna ramka szkła' },
     { id: 'ice', name: 'Ice', color: 'border-cyan-400 text-cyan-300', desc: 'Mroźny krystaliczny lód' },
     { id: 'gold', name: 'Gold', color: 'border-amber-400 text-amber-300', desc: 'Luksusowe polerowane złoto' },
     { id: 'emerald', name: 'Emerald', color: 'border-emerald-400 text-emerald-300', desc: 'Głęboki szmaragd magii' },
     { id: 'crimson', name: 'Crimson', color: 'border-rose-500 text-rose-300', desc: 'Wulkaniczny kryształ' },
-    { id: 'mag', name: 'MaG', color: 'border-purple-500 text-purple-300', desc: 'Portalowa korona obsidianu' }
+    { id: 'mag', name: 'MaG', color: 'border-purple-500 text-purple-300', desc: 'Portalowa korona obsidianu' },
+    { id: 'r4_frame', name: 'R4 MaG', color: 'border-cyan-400 text-cyan-200', desc: 'Elitarny herb sojuszu MaG', requiredRoleDesc: 'Ranga R4 MaG' },
+    { id: 'moderator_frame', name: 'Moderator', color: 'border-purple-400 text-purple-200', desc: 'Zimowa korona Moderatora', requiredRoleDesc: 'Ranga Moderator' },
+    { id: 'admin_frame', name: 'Admin Frame', color: 'border-amber-400 text-amber-300', desc: 'Złota korona Administratora', requiredRoleDesc: 'Ranga Admin' },
   ];
 
   return (
@@ -219,6 +273,39 @@ export const ProfilView: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* MOJE MIASTO (MINI WHITEOUT) CARD */}
+        <div className="mx-2 sm:mx-0 p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-800 flex items-center justify-center shadow-lg border border-cyan-400/50 shrink-0">
+              <Building2 className="w-6 h-6 text-cyan-200" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-white font-serif uppercase tracking-wide">
+                  MOJE MIASTO (MINI WHITEOUT)
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono">
+                  LVL {profile.cityData?.level || 1}
+                </span>
+              </div>
+              <p className="text-xs text-amber-300 font-semibold mt-0.5">
+                {CITY_LEVELS.find((l) => l.level === (profile.cityData?.level || 1))?.title || 'Osada Ocalałych'}
+              </p>
+              <p className="text-[11px] text-slate-300 mt-1 line-clamp-1">
+                {CITY_LEVELS.find((l) => l.level === (profile.cityData?.level || 1))?.desc}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveView('miasto')}
+            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-cyan-600/30 cursor-pointer shrink-0"
+          >
+            <span>ZOBACZ PEŁNE MIASTO</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Profile Tabs: POSTY | MEDIA | OSIĄGNIĘCIA */}
@@ -345,6 +432,43 @@ export const ProfilView: React.FC = () => {
         {/* TAB 3: OSIĄGNIĘCIA I KARTA GRACZA */}
         {activeTab === 'achievements' && (
           <div className="space-y-4 px-2 sm:px-0">
+            {/* POKER KOŚCI STATS CARD */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950/30 to-purple-950/30 border border-cyan-500/40 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-extrabold text-cyan-300 flex items-center gap-2">
+                  <Dices className="w-4 h-4 text-cyan-400" /> POKER KOŚCI – KARTA PORTALOWA
+                </h3>
+                <button
+                  onClick={() => setActiveView('gry')}
+                  className="text-xs text-cyan-400 hover:underline font-bold flex items-center gap-1"
+                >
+                  Zagraj Teraz <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono">
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 font-sans block font-semibold">ELO</span>
+                  <span className="text-sm font-black text-amber-400">{pokerStats.elo}</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 font-sans block font-semibold">RANKING</span>
+                  <span className="text-sm font-black text-cyan-300">#{pokerRank}</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 font-sans block font-semibold">WYGRANE / PRZEGRANE</span>
+                  <span className="text-sm font-black text-emerald-400">{pokerStats.wins}W <span className="text-slate-500">/</span> <span className="text-rose-400">{pokerStats.losses}L</span></span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                  <span className="text-[10px] text-slate-400 font-sans block font-semibold">ROZEGRANE / TURNIEJE</span>
+                  <span className="text-sm font-black text-purple-300">{pokerStats.played} <span className="text-slate-500">({pokerStats.tournamentWins} pucharów)</span></span>
+                </div>
+              </div>
+            </div>
+
             {/* Whiteout Survival Player Card */}
             <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border border-amber-500/30 space-y-4 shadow-xl">
               <h3 className="text-sm font-extrabold text-amber-300 flex items-center gap-2">
@@ -479,25 +603,40 @@ export const ProfilView: React.FC = () => {
               {/* 1. System Avatar Frame Selection */}
               <div>
                 <label className="block text-slate-200 font-extrabold mb-2">Systemowa Ramka Avatara</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {frameOptions.map((f) => (
-                    <div
-                      key={f.id}
-                      onClick={() => setEditFrame(f.id)}
-                      className={`p-3 rounded-2xl border cursor-pointer flex items-center gap-3 transition-all ${
-                        editFrame === f.id
-                          ? 'bg-amber-500/10 border-amber-500 ring-1 ring-amber-500/50'
-                          : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <AvatarWithFrame src={editAvatar} frame={f.id} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <span className={`text-xs font-black block ${f.color}`}>{f.name}</span>
-                        <span className="text-[10px] text-slate-400 block truncate">{f.desc}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {frameOptions.map((f) => {
+                    const isAllowed = canEquipFrame(f.id);
+
+                    return (
+                      <div
+                        key={f.id}
+                        onClick={() => {
+                          if (isAllowed) {
+                            setEditFrame(f.id);
+                          } else {
+                            alert(`Brak uprawnień do ramki ${f.name}! Wymaga rangi: ${f.requiredRoleDesc}.`);
+                          }
+                        }}
+                        className={`p-3 rounded-2xl border flex items-center gap-3 transition-all ${
+                          !isAllowed
+                            ? 'bg-slate-950/60 border-slate-800/80 opacity-60 cursor-not-allowed'
+                            : editFrame === f.id
+                            ? 'bg-amber-500/10 border-amber-500 ring-1 ring-amber-500/50 cursor-pointer'
+                            : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 cursor-pointer'
+                        }`}
+                      >
+                        <AvatarWithFrame src={editAvatar} frame={f.id} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <span className={`text-xs font-black block ${f.color}`}>{f.name}</span>
+                          <span className="text-[10px] text-slate-400 block truncate">
+                            {isAllowed ? f.desc : `🔒 Wymaga: ${f.requiredRoleDesc}`}
+                          </span>
+                        </div>
+                        {isAllowed && editFrame === f.id && <Check className="w-4 h-4 text-amber-400 shrink-0" />}
+                        {!isAllowed && <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />}
                       </div>
-                      {editFrame === f.id && <Check className="w-4 h-4 text-amber-400 shrink-0" />}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
